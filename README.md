@@ -6,7 +6,7 @@ Community contributed basic lab guides to show you how to build up basic Generat
 
 ### Basic infrastructure
 - [ ] Local laptop
-- [ ] LLM Server and OpenWebUI front end
+- [ ] [LLM Server and Open WebUI front end](/lab2/README.md)
 - [ ] Diffusion server
 
 ### Basic steps
