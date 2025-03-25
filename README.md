@@ -8,6 +8,7 @@ Community contributed basic lab guides to show you how to build up basic Generat
 - [ ] Local laptop
 - [ ] [LLM Server and Open WebUI front end](/lab2/README.md)
 - [ ] Diffusion server
+- [ ] [Computer vision model with laptop webcam](/lab4/README.md)
 
 ### Basic steps
 - [ ] Connect an LLM service API
