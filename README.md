@@ -1,6 +1,6 @@
-# GenAI-stepbystep
+# AI-stepbystep
 
-Community contributed basic lab guides to show you how to build up basic Generative AI environments and related labs step by step
+Community contributed basic lab guides to show you how to build up basic AI environments and related labs, step by step
 
 ## Lab Guides
 
