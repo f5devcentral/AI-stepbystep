@@ -14,3 +14,6 @@ Community contributed basic lab guides to show you how to build up basic AI envi
 - [ ] Connect an LLM service API
 - [ ] Integrate RAG data
 - [ ] Model fine tuning
+
+### Community builds
+- [Buu Lam](builds/buu_lam.md)
