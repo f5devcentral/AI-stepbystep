@@ -5,7 +5,10 @@ Community contributed basic lab guides to show you how to build up basic AI envi
 ## Lab Guides
 
 ### Basic infrastructure
-- [ ] Local laptop
+- [x] Local laptop
+  - [x] [Mac](/lab1/ollama_mac.md)
+  - [x] [Windows](/lab1/ollama_win.md)
+  - [x] [Linux](/lab1/ollama_lnx.md)
 - [ ] [LLM Server and Open WebUI front end](/lab2/README.md)
 - [ ] Diffusion server
 - [ ] [Computer vision model with laptop webcam](/lab4/README.md)
