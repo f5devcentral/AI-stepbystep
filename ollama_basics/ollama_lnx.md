@@ -1,13 +1,10 @@
 # Installing Ollama on Linux
 
-1. Grab the app archive from the [Ollama download page](https://ollama.com/download/mac).
-2. TBD
+1. Type `curl -fsSL https://ollama.com/install.sh | sh` in the terminal
 
 # Run a Model
 
-1. Start the terminal
-2. Run a model. If you don't have it yet, it'll first download then run the model.
-`ollama run gemma3:1b`
+1. Still in the terminal, type `ollama run gemma3:1b`
 3. Let's test it out with a picture analysis. My test is a picture featuring dueling force-wielding cats. Here's the start of the output from the gemma:1b model, which returned immediately:
 `ollama run gemma3:1b`                                                                                        
 ```>>> what can you tell me about this picture? /Users/j.rahm/PycharmProjects/AI-stepbystep/lab1/dueling-cats-2.png
