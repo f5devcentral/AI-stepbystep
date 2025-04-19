@@ -1,6 +1,7 @@
-# AI-stepbystep
-
-Community contributed basic lab guides to show you how to build up basic AI environments and related labs, step by step
+<p align="center">
+<img alt="GitHub contributors" src="https://img.shields.io/github/contributors/buulam/AI-stepbystep?style=flat-square&logo=refinedgithub&logoColor=ffffff">
+<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/t/buulam/AI-stepbystep?style=social&logo=github&logoColor=000000">
+</p>
 
 ## Lab Guides
 
