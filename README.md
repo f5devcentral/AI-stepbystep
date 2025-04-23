@@ -3,27 +3,29 @@
 <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/t/buulam/AI-stepbystep?style=social&logo=github&logoColor=000000">
 </p>
 
+# Welcome to AI Step-by-Step
+Getting started with AI is simple and can be free. The following lab guides act as a starting point for people who want to build their own environment rather than jumping straight into a chat prompt. There will be lab options that are free, then up to ~$1000, then up to a few thousand dollars.
+
+These are Community contributed labs. If you see any opportunities for improvement or errors, please contribute with a Pull Request or notify the Lab Author.
+
 ## Lab Guides
 
 ### Basic infrastructure
-- [x] Local laptop labs
-  - [ ] Running Ollama locally
-    - [x] [Run your first model - Mac](/ollama_basics/ollama_mac.md)
-    - [ ] [Run your first model - Windows](/ollama_basics/ollama_win.md)
-    - [x] [Run your first model - Linux](/ollama_basics/ollama_lnx.md)
-    - [x] [Create a custom model](/ollama_basics/custom_model.md)
+- [x] Text focused labs
+  - [ ] [Running your first model locally with Ollama](/1_text_labs/ollama_basics/readme.md)
+    - [x] [Mac](/1_text_labs/ollama_basics/ollama_mac.md)
+    - [x] [Windows](/1_text_labs/ollama_basics/ollama_win.md)
+    - [x] [Linux](/1_text_labs/ollama_basics/ollama_lnx.md)
+    - [x] [Create a custom model](/1_text_labs/ollama_basics/custom_model.md)
   - [ ] Running Daniel Miessler's [fabric](https://github.com/danielmiessler/fabric) framework
-      - [x] [Configuring your environment](fabric/env_config.md)
-      - [x] [Using existing patterns](fabric/existing_patterns.md)
-      - [ ] [Creating your own pattern](fabric/custom_patterns.md)
-- [ ] [LLM Server and Open WebUI front end](/lab2/README.md)
-- [ ] Diffusion server
-- [ ] [Computer vision model with laptop webcam](/lab4/README.md)
+    - [x] [Configuring your environment](/1_text_labs/fabric/env_config.md)
+    - [x] [Using existing patterns](/1_text_labs/fabric/existing_patterns.md)
+    - [ ] [Creating your own pattern](/1_text_labs/fabric/custom_patterns.md)
+  - [ ] [LLM Server and Open WebUI front end](/open_webui/README.md)
+- [ ] Image focused labs
+  - [ ] Diffusion server
+  - [ ] [Computer vision model with laptop webcam](/lab4/README.md)
 
-### Basic steps
-- [ ] Connect an LLM service API
-- [ ] Integrate RAG data
-- [ ] Model fine tuning
 
 ### Community builds
 - [Buu Lam](builds/buu_lam.md)
