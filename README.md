@@ -22,10 +22,14 @@ These are Community contributed labs. If you see any opportunities for improveme
     - [x] [Using existing patterns](/1_text_labs/fabric/existing_patterns.md)
     - [ ] [Creating your own pattern](/1_text_labs/fabric/custom_patterns.md)
   - [ ] [LLM Server and Open WebUI front end](/open_webui/README.md)
+- [ ] Audio focused labs
+  - [ ] Transcribe an audio file
+  - [ ] Voice generation
 - [ ] Image focused labs
   - [ ] Diffusion server
-  - [ ] [Computer vision model with laptop webcam](/lab4/README.md)
-
+  - [ ] Computer vision model with laptop webcam
+  - [ ] Add object detection to your security camera with Frigate
 
 ### Community builds
+Need ideas for what your home lab could look like? Want to confirm compatible parts? Here are labs of our Community members.
 - [Buu Lam](builds/buu_lam.md)
