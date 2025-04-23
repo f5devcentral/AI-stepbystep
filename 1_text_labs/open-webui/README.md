@@ -1,3 +1,6 @@
+![Static Badge](https://img.shields.io/badge/Author-buulam-blue?link=https%3A%2F%2Fgithub.com%2Fbuulam)
+
+---
 # LLM server and Open WebUI
 
 This lab will guide you through a basic scenario that provides you will a simple to use web front end to interact with AI models for both text and images.

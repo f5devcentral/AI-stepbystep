@@ -30,6 +30,13 @@ These are Community contributed labs. If you see any opportunities for improveme
   - [ ] Computer vision model with laptop webcam
   - [ ] Add object detection to your security camera with Frigate
 
-### Community builds
+## Community hardware builds
 Need ideas for what your home lab could look like? Want to confirm compatible parts? Here are labs of our Community members.
 - [Buu Lam](builds/buu_lam.md)
+
+## Contributors
+<a href="https://github.com/buulam/AI-stepbystep/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=buulam/AI-stepbystep" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).

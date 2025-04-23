@@ -1,3 +1,6 @@
+![Static Badge](https://img.shields.io/badge/Author-f5--rahm-blue?link=https%3A%2F%2Fgithub.com%2Ff5-rahm)
+
+---
 # Creating a Custom Model
 
 Ollama allows you to create custom models from the existing ones. This allows you to tweak and tune how the model engages with your prompts. You can find all the functionality in the [Model File](https://github.com/ollama/ollama/blob/main/docs/modelfile.md) on their Github repo. In this quick lab, we'll create a model that will provide all responses like Bill Lumbergh from Office Space.
