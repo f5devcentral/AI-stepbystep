@@ -17,7 +17,9 @@ Community contributed basic lab guides to show you how to build up basic AI envi
       - [ ] [Creating your own pattern](fabric/custom_patterns.md)
 - [ ] [LLM Server and Open WebUI front end](/lab2/README.md)
 - [ ] Diffusion server
-- [ ] [Computer vision model with laptop webcam](/lab4/README.md)
+- [ ] Computer vision model with laptop webcam
+  - [x] [Facial Recognition - Mood Detection](vision_models/facial_recognition.md)
+  - [ ] [Object Recognition](vision_models/object_recognition.md)
 
 ### Basic steps
 - [ ] Connect an LLM service API
