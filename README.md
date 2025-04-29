@@ -28,6 +28,8 @@ These are Community contributed labs. If you see any opportunities for improveme
 - [ ] Image focused labs
   - [ ] Diffusion server
   - [ ] Computer vision model with laptop webcam
+    - [x] [Facial Recognition](3_image_labs/facial_recognition.md)
+    - [ ] [Object Recognition](3_image_labs/object_recognition.md)
   - [ ] Add object detection to your security camera with Frigate
 
 ## Community hardware builds
