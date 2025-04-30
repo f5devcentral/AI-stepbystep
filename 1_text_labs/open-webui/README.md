@@ -39,6 +39,7 @@ B --> F[mistral]
 
 For this lab you will need:
 * 1x Ubuntu linux server
+  * Docker installed
   * If only installing Open WebUI, this could be as small as a Raspberry Pi
   * If running Ollama, a general purpose CPU is fine but a GPU is recommended if using regularly
 * API key from OpenAI if you want to use those services
