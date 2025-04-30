@@ -1,3 +1,5 @@
+![Static Badge](https://img.shields.io/badge/Author-f5--rahm-blue?link=https%3A%2F%2Fgithub.com%2Ff5-rahm)
+
 # Using OpenCV and MediaPipe for facial recognition
 
 In this lab, we'll use OpenCV and MediaPipe along with your built-in or external webcam to first track your mood, then just OpenCV to blur your face.
