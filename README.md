@@ -21,7 +21,7 @@ These are Community contributed labs. If you see any opportunities for improveme
     - [x] [Configuring your environment](/1_text_labs/fabric/env_config.md)
     - [x] [Using existing patterns](/1_text_labs/fabric/existing_patterns.md)
     - [ ] [Creating your own pattern](/1_text_labs/fabric/custom_patterns.md)
-  - [ ] [LLM Server and Open WebUI front end](/1_text_labs/open_webui/README.md)
+  - [ ] [LLM Server and Open WebUI front end](/1_text_labs/open-webui/README.md)
 - [ ] Audio focused labs
   - [ ] Transcribe an audio file
   - [ ] Voice generation
