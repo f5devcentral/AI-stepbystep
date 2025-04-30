@@ -5,7 +5,7 @@ The simplest way to install Open WebUI is via Docker. If you do not have this in
 https://docs.docker.com/engine/install/
 
 ## Install Ollama (Optional)
-Ollama is a simple installation. Here are guides organized by operating system: [Ollama Basics](1_text_labs/ollama_basics/readme.md)
+Ollama is a simple installation. Here are guides organized by operating system: [Ollama Basics](/1_text_labs/ollama_basics/readme.md)
 
 ## Install Open WebUI via Docker
 For reference, the instructions can be found here: https://docs.openwebui.com/getting-started/quick-start/
