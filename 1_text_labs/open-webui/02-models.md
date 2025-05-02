@@ -56,6 +56,6 @@ And now you should be able to access the OpenAI models and start prompting.
 
 ![image18](images/image18.png)
 
-![image17](images/image17.png)]
+![image17](images/image17.png)
 
 This is the end of this portion of the lab. Return to the [start](README.md) of the lab to see if there are other labs you'd like to explore with Open WebUI.

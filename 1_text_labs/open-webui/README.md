@@ -43,6 +43,6 @@ For this lab you will need:
   * If only installing Open WebUI, this could be as small as a Raspberry Pi
   * If running Ollama, a general purpose CPU is fine but a GPU is recommended if using regularly
 * API key from OpenAI if you want to use those services
-  * See this [https://platform.openai.com/docs/overview] link for details
+  * See [this link](https://platform.openai.com/docs/overview) for details
 
 Proceed to [next steps](01-prep.md)
