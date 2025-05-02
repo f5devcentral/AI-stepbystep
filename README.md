@@ -21,7 +21,9 @@ These are Community contributed labs. If you see any opportunities for improveme
     - [x] [Configuring your environment](/1_text_labs/fabric/env_config.md)
     - [x] [Using existing patterns](/1_text_labs/fabric/existing_patterns.md)
     - [ ] [Creating your own pattern](/1_text_labs/fabric/custom_patterns.md)
-  - [ ] [LLM Server and Open WebUI front end](/1_text_labs/open-webui/README.md)
+  - [x] [Open WebUI front end](/1_text_labs/open-webui/README.md)
+    - [x] [Add OpenAI models to your Open WebUI via API key](/1_text_labs/open-webui/02-openai.md)
+    - [ ] Connect a local Ollama instance to your Open WebUI
 - [ ] Audio focused labs
   - [ ] Transcribe an audio file
   - [ ] Voice generation

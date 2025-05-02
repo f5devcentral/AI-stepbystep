@@ -83,4 +83,4 @@ Review these settings:
 
 ![image04](images/image04.png)
 
-We will start to configure models that you can access in the [next steps](02-models.md).
+We will start to configure models that you can access in the [next steps](02-openai.md).

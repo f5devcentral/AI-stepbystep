@@ -45,4 +45,4 @@ For this lab you will need:
 * API key from OpenAI if you want to use those services
   * See [this link](https://platform.openai.com/docs/overview) for details
 
-Proceed to [next steps](01-prep.md)
+Proceed to [next steps](01-openwebui.md)
