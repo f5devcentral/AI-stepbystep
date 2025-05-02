@@ -11,23 +11,23 @@ These are Community contributed labs. If you see any opportunities for improveme
 ## Lab Guides
 
 ### Basic infrastructure
-- [x] Text focused labs
-  - [ ] [Running your first model locally with Ollama](/1_text_labs/ollama_basics/readme.md)
+- Text focused labs
+  - [Running your first model locally with Ollama](/1_text_labs/ollama_basics/readme.md)
     - [x] [Mac](/1_text_labs/ollama_basics/ollama_mac.md)
     - [x] [Windows](/1_text_labs/ollama_basics/ollama_win.md)
     - [x] [Linux](/1_text_labs/ollama_basics/ollama_lnx.md)
     - [x] [Create a custom model](/1_text_labs/ollama_basics/custom_model.md)
-  - [ ] Running Daniel Miessler's [fabric](https://github.com/danielmiessler/fabric) framework
+  - Running Daniel Miessler's [fabric](https://github.com/danielmiessler/fabric) framework
     - [x] [Configuring your environment](/1_text_labs/fabric/env_config.md)
     - [x] [Using existing patterns](/1_text_labs/fabric/existing_patterns.md)
     - [ ] [Creating your own pattern](/1_text_labs/fabric/custom_patterns.md)
   - [x] [Open WebUI front end](/1_text_labs/open-webui/README.md)
     - [x] [Add OpenAI models to your Open WebUI via API key](/1_text_labs/open-webui/02-openai.md)
     - [ ] Connect a local Ollama instance to your Open WebUI
-- [ ] Audio focused labs
+- Audio focused labs
   - [ ] Transcribe an audio file
   - [ ] Voice generation
-- [ ] Image focused labs
+- Image focused labs
   - [ ] Diffusion server
   - [ ] Computer vision model with laptop webcam
     - [x] [Facial Recognition](3_image_labs/facial_recognition.md)
