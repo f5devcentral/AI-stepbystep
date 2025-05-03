@@ -45,4 +45,8 @@ For this lab you will need:
 * API key from OpenAI if you want to use those services
   * See [this link](https://platform.openai.com/docs/overview) for details
 
-Proceed to [next steps](01-openwebui.md)
+Proceed to this lab to install [Open WebUI](01-openwebui.md)
+
+Once Open WebUI is install, you can chose one of the following options:
+- Connect to OpenAI via API to access their models. [OpenAI via API](02-openai.md)
+- Connect to your local Ollama instance. [Connecting your local Ollama](03-ollama.md)
