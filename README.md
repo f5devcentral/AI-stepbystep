@@ -23,7 +23,7 @@ These are Community contributed labs. If you see any opportunities for improveme
     - [ ] [Creating your own pattern](/1_text_labs/fabric/custom_patterns.md)
   - [x] [Open WebUI front end](/1_text_labs/open-webui/README.md)
     - [x] [Add OpenAI models to your Open WebUI via API key](/1_text_labs/open-webui/02-openai.md)
-    - [ ] Connect a local Ollama instance to your Open WebUI
+    - [x] [Connect a local Ollama instance to your Open WebUI](1_text_labs/open-webui/03-ollama.md)
 - Audio focused labs
   - [ ] Transcribe an audio file
   - [ ] Voice generation
