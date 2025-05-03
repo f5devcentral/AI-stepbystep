@@ -56,7 +56,13 @@ You should now be able to open the page by visiting the IP or hostname of the se
 
 http://server:3000
 
+You should see an initial screen. Click the arrow at the bottom.
+
+![image19](images/image19.png)
+
 From here, you will be asked to create the administrator user account.
+
+![iamge20](images/image20.png)
 
 ## Initial server security
 
