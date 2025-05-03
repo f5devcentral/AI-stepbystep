@@ -1,3 +1,7 @@
+![Static Badge](https://img.shields.io/badge/Author-buulam-blue?link=https%3A%2F%2Fgithub.com%2Fbuulam)
+
+---
+
 # Adding your local Ollama instance
 
 Ollama is free software that allows you to host models local to your environment. In this lab, it is expected that you already have it install. There is another set of labs that walk you through this. [Ollama Basics](../ollama_basics/readme.md)

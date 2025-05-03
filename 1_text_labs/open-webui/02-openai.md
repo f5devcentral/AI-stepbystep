@@ -1,3 +1,7 @@
+![Static Badge](https://img.shields.io/badge/Author-buulam-blue?link=https%3A%2F%2Fgithub.com%2Fbuulam)
+
+---
+
 # Configuring OpenAI
 
 By adding an API key from OpenAI, you'll be able to access the models offered from OpenAI but instead of paying for the regular monthly cost, you can pay by the API request. This is a pricing model that will generally be advantageous for individual users and it's a great option for a family AI setup as it should amount to only a few dollars per month.

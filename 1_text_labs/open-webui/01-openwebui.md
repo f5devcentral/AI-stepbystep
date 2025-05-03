@@ -1,3 +1,7 @@
+![Static Badge](https://img.shields.io/badge/Author-buulam-blue?link=https%3A%2F%2Fgithub.com%2Fbuulam)
+
+---
+
 # Preparing the server
 
 ## Install Docker Engine
