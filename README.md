@@ -38,6 +38,9 @@ These are Community contributed labs. If you see any opportunities for improveme
 Need ideas for what your home lab could look like? Want to confirm compatible parts? Here are labs of our Community members.
 - [Buu Lam](builds/buu_lam.md)
 
+## Additional learning resources
+Here are some [more labs](morelabs.md) we've come across. PR's are welcome!
+
 ## Contributors
 <a href="https://github.com/buulam/AI-stepbystep/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=buulam/AI-stepbystep" />
