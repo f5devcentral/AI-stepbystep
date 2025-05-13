@@ -44,7 +44,9 @@ Are you running a lab that uses a Raspberry Pi 5 and it needs a home?
 Check out this design for a case: [pi-case](/pi-case/README.md)
 
 ## Additional learning resources
-Here are some [more labs](morelabs.md) we've come across. PR's are welcome!
+- F5's solutions offer tremendous value once you have learned how to build AI. Here are some labs that introduce those solutions. [Secure deliver optimize GenAI](https://github.com/f5devcentral/secure-deliver-optimize-genai)
+
+- Here are some [more labs](morelabs.md) we've come across. PR's are welcome!
 
 ## Contributors
 <a href="https://github.com/buulam/AI-stepbystep/graphs/contributors">
