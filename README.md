@@ -38,6 +38,11 @@ These are Community contributed labs. If you see any opportunities for improveme
 Need ideas for what your home lab could look like? Want to confirm compatible parts? Here are labs of our Community members.
 - [Buu Lam](builds/buu_lam.md)
 
+## Raspberri Pi case
+Are you running a lab that uses a Raspberry Pi 5 and it needs a home?
+
+Check out this design for a case: [pi-case](/pi-case/README.md)
+
 ## Additional learning resources
 Here are some [more labs](morelabs.md) we've come across. PR's are welcome!
 
