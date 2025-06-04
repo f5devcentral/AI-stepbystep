@@ -1,0 +1,5 @@
+{
+    "markdown.extension.print.theme": "light",
+    "workbench.preferredLightColorTheme": "Visual Studio Dark",
+    "window.autoDetectColorScheme": true
+}
