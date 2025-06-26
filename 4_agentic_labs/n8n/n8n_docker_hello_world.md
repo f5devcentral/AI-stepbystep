@@ -1,4 +1,4 @@
-
+---
 # Goals
 By the end of this short lab, you will have created your first AI agent. It doesn't do a whole lot, except to proxy the conversation between n8n's native chat interface and your LLM (Ollama), but it will clearly display the power that an agent provides and it will set you up for easy AI powered automation.
 
