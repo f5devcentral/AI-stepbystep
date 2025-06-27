@@ -2,4 +2,4 @@
 
 This is a collection of agent-based labs from DevCentral.
 
-- [n8n Labs](n8n/n8n_docker_hello_world.md)
+- [n8n Labs](n8n/readme.md)
