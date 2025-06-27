@@ -26,6 +26,7 @@ By the end of this short lab, you will have created your first AI agent. It does
    ![img4](images/4_usage_plan.png)
 8. Click the Enter activation key button and paste your key in from your email:
    ![img5](images/5_plan_screen.png)
+
    ![img6](images/6_key_pasted.png)
 9. Create a new workflow by clicking the + button in the top left of the screen and select Workflow from the drop-down:
    ![img7](images/7_new_workflow.png)
@@ -33,14 +34,20 @@ By the end of this short lab, you will have created your first AI agent. It does
    ![img8](images/8_add_trigger.png)
 11. Create your agent! Click the + icon that is attached to your trigger and select AI > AI Agent from the side menu. When your agent definition screen comes up, take a look around, but change nothing and head back to your canvas:
    ![img9](images/9_click_ai.png)
+
    ![img10](images/10_select_agent.png)
+
    ![img11](images/11_agent_define.png)
 12. Enable your agent with Ollama. Click the add chat model button, then select Ollama Chat Model from the side menu. When the Ollama definition screen comes up, click in the box and create new credentials. All you need to do for ollama credentials is to set the actual IP of your host machine. Do not use 127.0.0.1, either. Once complete, close out of the definition screen:
    ![img12](images/12_connect_model.png)
+
    ![img13](images/13_create_cred.png)
+
    ![img14](images/14_add_ip.png)
+
    ![img15](images/15_close_out.png)
 13. TEST IT OUT!! Type Hello World in the chat box and watch in amazement as you proxy your first chat conversation through an agent.
    ![img16](images/16_type_hello.png)
+
    ![img17](images/17_mic_drop.png)
 14. Homework: Now that you've done the lab, explore the memory and tool options in your agent. The memory allows you to insert your chat data in any of a number of databases. The tools are connectors to various other resources and web utilities like ticketing services and chats. Check out the various triggers besides chat interface, as well. There are incredible ways to trigger these flows, too. Please imagine the possibilities for automating a million things in your work day with simple agentic flows
