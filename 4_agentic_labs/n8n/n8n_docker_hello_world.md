@@ -18,38 +18,32 @@ By the end of this short lab, you will have created your first AI agent. It does
 5. Click past the customization screen:
    ![img2](images/2_customize_screen.png)
 6. Request your free community license activation key and apply it:
-   <img src="images/3_send_license.png" width="400">
    ![img3](images/3_send_license.png)
 7. Click usage and plan to enter your license key that should be in your email:
-   <img src="images/4_usage_plan.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img4](images/4_usage_plan.png)
 8. Click the Enter activation key button and paste your key in from your email:
-   <img src="images/5_plan_screen.png" width="400">
-   ![img2](images/2_customize_screen.png)
-   <img src="images/6_key_pasted.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img5](images/5_plan_screen.png)
+   ![img6](images/6_key_pasted.png)
 9. Create a new workflow by clicking the + button in the top left of the screen and select Workflow from the drop-down:
-   <img src="images/7_new_workflow.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img7](images/7_new_workflow.png)
 10. Trigger your flow with a chat message. Click the big + in the center of the canvas and select On chat message.
-   <img src="images/8_add_trigger.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img8](images/8_add_trigger.png)
 11. Create your agent! Click the + icon that is attached to your trigger and select AI > AI Agent from the side menu. When your agent definition screen comes up, take a look around, but change nothing and head back to your canvas:
    <img src="images/9_click_ai.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img9](images/2_customize_screen.png)
    <img src="images/10_select_agent.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img10](images/2_customize_screen.png)
    <img src="images/11_agent_define.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img11](images/2_customize_screen.png)
 12. Enable your agent with Ollama. Click the add chat model button, then select Ollama Chat Model from the side menu. When the Ollama definition screen comes up, click in the box and create new credentials. All you need to do for ollama credentials is to set the actual IP of your host machine. Do not use 127.0.0.1, either. Once complete, close out of the definition screen:
    <img src="images/12_connect_model.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img12](images/2_customize_screen.png)
    <img src="images/13_create_cred.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img13](images/2_customize_screen.png)
    <img src="images/14_add_ip.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img14](images/2_customize_screen.png)
    <img src="images/15_close_out.png" width="400">
-   ![img2](images/2_customize_screen.png)
+   ![img15](images/2_customize_screen.png)
 13. TEST IT OUT!! Type Hello World in the chat box and watch in amazement as you proxy your first chat conversation through an agent.
    <img src="images/16_type_hello.png" width="400">
    <img src="images/17_mic_drop.png" width="400">
