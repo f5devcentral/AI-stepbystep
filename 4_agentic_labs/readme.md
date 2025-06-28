@@ -1,5 +1,7 @@
-# DevCentral Agentic Labs
+# Agentic Labs
 
-This is a collection of agent-based labs from DevCentral.
-
-- [n8n Labs](n8n/readme.md)
+  - Agentic platforms
+    - [n8n](n8n/readme.md)
+      - [x] [Installing n8n](n8n/readme.md)
+    - Flowise
+      - [ ] Installing Flowise
