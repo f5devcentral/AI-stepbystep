@@ -33,7 +33,13 @@ These are Community contributed labs. If you see any opportunities for improveme
     - [x] [Facial Recognition](3_image_labs/facial_recognition.md)
     - [ ] [Object Recognition](3_image_labs/object_recognition.md)
   - [ ] Add object detection to your security camera with Frigate
-
+- Agentic focused labs
+  - Agentic platforms
+    - [n8n](4_agentic_labs/n8n/readme.md)
+      - [x] [Installing n8n](4_agentic_labs/n8n/readme.md)
+    - Flowise
+      - [ ] Installing Flowise
+      
 ## Community hardware builds
 Need ideas for what your home lab could look like? Want to confirm compatible parts? Here are labs of our Community members.
 - [Buu Lam](builds/buu_lam.md)
