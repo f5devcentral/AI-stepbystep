@@ -3,13 +3,18 @@
 ---
 # Installing Ollama on Linux
 
-1. Type `curl -fsSL https://ollama.com/install.sh | sh` in the terminal
+#### 1. Type `curl -fsSL https://ollama.com/install.sh | sh` in the terminal
 
 # Run a Model
 
-1. Still in the terminal, type `ollama run gemma3:1b`
-3. Let's test it out with a picture analysis. My test is a picture featuring dueling force-wielding cats. Here's the start of the output from the gemma:1b model, which returned immediately:
-`ollama run gemma3:1b`                                                                                        
+#### 2. Still in the terminal, type `ollama run gemma3:1b`
+This will automatically run a pull request for the gemma3 language model with a 1 billion parameter set.  Gemma is a lightweight multimodal AI model available supporting several parameter sizes but as you increase accuracy (the parameters), it will increase computing requirements. 
+
+Let's test it out with a picture analysis. Our test is a picture featuring dueling force-wielding cats. Here's the start of the output from the gemma:1b model, which returned immediately:
+#### 3. Run `ollama run gemma3:1b`
+
+From the Ollama prompt, type: 
+
 ```>>> what can you tell me about this picture? /Users/j.rahm/PycharmProjects/AI-stepbystep/lab1/dueling-cats-2.png
 Okay, let's break down what we can gather about the image you provided:
 
@@ -18,8 +23,13 @@ Okay, let's break down what we can gather about the image you provided:
 The image is a highly stylized, almost cartoonish, depiction of a cat and a dog engaged in a challenging and playful "duel." It's a visual metaphor for a struggle of opposing forces or a competition.  The style leans 
 heavily into a slightly exaggerated, slightly dreamlike aesthetic.
 ```
-You can close the model by typing `/bye`. One of the cats is apparently a dog, let's step it up to the gemma:4b model.
-5. Type `ollama run gemma3:4b`, and then after the download completes, re-enter the same prompt as before.
+Close Ollama by typing `/bye`. 
+
+One of the cats is apparently a dog. Per <a href="https://ai.google.dev/gemma/docs/core">Google</a> "The Gemma3 1B size models are text only and *do not support image input*. The model was unable to fully understand the picture and what we experienced was a form of AI <a href="https://www.ibm.com/think/topics/ai-hallucinations">hallucination</a>. 
+
+To increase accuracy let's step it up to the gemma:4b model.
+
+3. Type `ollama run gemma3:4b`, and then after the download completes, re-enter the same prompt as before.
 ```>>> what can you tell me about this picture? /Users/j.rahm/PycharmProjects/AI-stepbystep/lab1/dueling-cats-2.png
 Okay, let's break down this wonderfully surreal image! 
 
