@@ -59,7 +59,6 @@ Check out this design for a case: [pi-case](/pi-case/README.md)
 - Here are some [more labs](morelabs.md) we've come across. PR's are welcome!
 
 ## Contributors
-## Contributors
 <a href="https://github.com/f5devcentral/ai-stepbystep/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=f5devcentral/ai-stepbystep" />
 </a>
