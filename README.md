@@ -60,11 +60,14 @@ Check out this design for a case: [pi-case](/pi-case/README.md)
 
 ## Contributors
 <<<<<<< HEAD
+<<<<<<< HEAD
 <a href="https://github.com/f5devcentral/ai-stepbystep/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=f5devcentral/ai-stepbystep" />
 </a>
 =======
 ## Contributors
+=======
+>>>>>>> 66a9b79 (Fix formatting of Contributors section in README.md)
 <a href="https://github.com/f5devcentral/ai-stepbystep/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=f5devcentral/ai-stepbystep" />
 </a>
