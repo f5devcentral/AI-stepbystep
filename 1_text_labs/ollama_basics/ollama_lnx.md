@@ -3,19 +3,21 @@
 ---
 # Installing Ollama on Linux
 
-#### 1. Type `curl -fsSL https://ollama.com/install.sh | sh` in the terminal
+1. Type `curl -fsSL https://ollama.com/install.sh | sh` in the terminal
 
 # Run a Model
 
-#### 2. Still in the terminal, type `ollama run gemma3:1b`
+2. Still in the terminal, type `ollama run gemma3:1b`
 This will automatically run a pull request for the gemma3 language model with a 1 billion parameter set.  Gemma is a lightweight multimodal AI model available supporting several parameter sizes but as you increase accuracy (the parameters), it will increase computing requirements. 
 
 Let's test it out with a picture analysis. Our test is a picture featuring dueling force-wielding cats. Here's the start of the output from the gemma:1b model, which returned immediately:
-#### 3. Run `ollama run gemma3:1b`
+
+3. Run `ollama run gemma3:1b`
 
 From the Ollama prompt, type: 
 
-```>>> what can you tell me about this picture? /Users/j.rahm/PycharmProjects/AI-stepbystep/lab1/dueling-cats-2.png
+```
+>>> what can you tell me about this picture? /Users/Keanu/AI-stepbystep/lab1/dueling-cats-2.png
 Okay, let's break down what we can gather about the image you provided:
 
 **Overall Impression:**
@@ -38,7 +40,7 @@ Okay, let's break down this wonderfully surreal image!
 This is a digitally manipulated image depicting two orange tabby cats engaged in a lightsaber duel against a backdrop of a bright, cloud-filled sky with a prominent rainbow.  Each cat is wielding a red lightsaber, 
 and beams of red light are shooting between them.
 ```
-This took about 30 seconds to process, but far more accurate to my picture!
+This took longer to process, but far more accurate to the sample picture!
 
 # Bonus challenge
 
@@ -70,5 +72,5 @@ Ollama streams the response word-by-word by default. To fix this, just set strea
 
 # Conclusion
 
-Ollama is a foundational block to many of the other services that build on top of or are adjacent to it. Dig in, get comfortable, and share any crazy stories from your lab exercises with the class!
+Ollama is the foundation for many AI tools you'll use in later labs. Now you have your first model is running - boom, you're officially in the AI game! - Play around and get comfortable with the basics, then explore and see what's next!
 
