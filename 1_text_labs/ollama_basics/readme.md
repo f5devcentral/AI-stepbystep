@@ -2,11 +2,11 @@
 
 ---
 # Ollama Basics
-Ollama is a popular open source tool that provides to ability to easily download and run popular LLM models.
+<a href="https://ollama.com/">Ollama</a> is a popular open-source tool that makes it incredibly easy to download and run popular LLM models locally, giving you hands-on experience with AI without needing cloud accounts, complex setups, or ongoing costs. 
 
-It can be run on your laptop and does not require a GPU however it does run much faster when a GPU is available.
+ Go from zero to running AI models in one coffee break!
 
-Select one of the below labs based on your computer to get started:
+Select one of the below labs installation methods to get started:
 - [Windows](ollama_win.md)
 - [Mac](ollama_mac.md)
 - [Linux](ollama_lnx.md)

@@ -3,7 +3,7 @@
 ---
 # Installing Ollama on Windows
 
-1. Grab the app archive from the [Ollama download page](https://ollama.com/download/mac).
+1. Grab the app archive from the [Ollama download page](https://ollama.com/download/windows).
 2. TBD
 
 # Run a Model
