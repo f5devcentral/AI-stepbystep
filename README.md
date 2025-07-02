@@ -55,8 +55,6 @@ Check out this design for a case: [pi-case](/pi-case/README.md)
 - Here are some [more labs](morelabs.md) we've come across. PR's are welcome!
 
 ## Contributors
-<a href="https://github.com/buulam/AI-stepbystep/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=buulam/AI-stepbystep" />
+<a href="https://github.com/f5devcentral/ai-stepbystep/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=f5devcentral/ai-stepbystep" />
 </a>
-
-Made with [contrib.rocks](https://contrib.rocks).
