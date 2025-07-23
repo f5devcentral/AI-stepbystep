@@ -7,12 +7,12 @@ Although this repo provides a number of lab guides to learn AI, it by no means c
 - Podman
 
 ### Machine Learning
-- BeautifulSoup
 - S3
 - YOLO
 - OpenCV
 
 ### Model Training
+- BeautifulSoup
 
 ### Inference
 - Run Time
