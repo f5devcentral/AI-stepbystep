@@ -4,15 +4,15 @@
 </p>
 
 # Welcome to AI Step-by-Step
-Getting started with AI is simple and can be free. The following lab guides act as a starting point for people who want to build their own environment rather than jumping straight into a chat prompt. There will be lab options that are free, then up to ~$1000, then up to a few thousand dollars.
+Getting started with AI is surpisingly simple and can begin completely free. These lab guides provide hands-on learning paths for those who want to build their own AI environments from the ground up, whith options that scale affordably: start with completely free tools and resources, progress to intermediate setups, or advance to professiona-grade environments that you can directly apply to real world use cases as your skills and needs grow.
 
-These are Community contributed labs. If you see any opportunities for improvement or errors, please contribute with a Pull Request or notify the Lab Author.
+These labs are community-driven and constantly evolving. Spot an improvement or catch an error? We'd love your contribution via Pull Request, or just reach out to the repository contributors.
 
 ## Lab Guides
 
-### Basic infrastructure
+### Getting Started
 - Text focused labs
-  - [Running your first model locally with Ollama](/1_text_labs/ollama_basics/readme.md)
+  - [Running your first AI model locally with Ollama](/1_text_labs/ollama_basics/readme.md)
     - [x] [Mac](/1_text_labs/ollama_basics/ollama_mac.md)
     - [x] [Windows](/1_text_labs/ollama_basics/ollama_win.md)
     - [x] [Linux](/1_text_labs/ollama_basics/ollama_lnx.md)
@@ -21,6 +21,8 @@ These are Community contributed labs. If you see any opportunities for improveme
     - [x] [Configuring your environment](/1_text_labs/fabric/env_config.md)
     - [x] [Using existing patterns](/1_text_labs/fabric/existing_patterns.md)
     - [ ] [Creating your own pattern](/1_text_labs/fabric/custom_patterns.md)
+
+### Next Steps: Adding a GUI and Going Beyond Text
   - [x] [Open WebUI front end](/1_text_labs/open-webui/README.md)
     - [x] [Add OpenAI models to your Open WebUI via API key](/1_text_labs/open-webui/02-openai.md)
     - [x] [Connect a local Ollama instance to your Open WebUI](1_text_labs/open-webui/03-ollama.md)
@@ -33,6 +35,8 @@ These are Community contributed labs. If you see any opportunities for improveme
     - [x] [Facial Recognition](3_image_labs/facial_recognition.md)
     - [ ] [Object Recognition](3_image_labs/object_recognition.md)
   - [ ] Add object detection to your security camera with Frigate
+
+### Expanding Your Knowledge: Running Agents
 - Agentic focused labs
   - Agentic platforms
     - [n8n](4_agentic_labs/n8n/readme.md)
