@@ -3,17 +3,21 @@
 ---
 # Installing Ollama on Windows
 
-1. Grab the app archive from the [Ollama download page](https://ollama.com/download/mac).
-2. TBD
+1. Grab the installer from the [Ollama download page](https://ollama.com/download/windows).
+2. Double-click the ollamasetup.exe and follow the installation prompts (you've done this before).
+3. Verify the installation by opening your terminal (CMD Prompt, Putty...) and type `ollama --version`.
+
+```
+ollama version is 0.9.6
+```
 
 # Run a Model
 
-1. Open a terminal application
-2. Run a model. If you don't have it yet, it'll first download then run the model.
-`ollama run gemma3:1b`
+1. Open/reopen your preferred terminal application
+2. Type `ollama run gemma3:1b`, since it's the first time you've run this, it will download the LLM model.
 3. Let's test it out with a picture analysis. My test is a picture featuring dueling force-wielding cats. Here's the start of the output from the gemma:1b model, which returned immediately:
 `ollama run gemma3:1b`                                                                                        
-```>>> what can you tell me about this picture? /Users/j.rahm/PycharmProjects/AI-stepbystep/lab1/dueling-cats-2.png
+```>>> what can you tell me about this picture? /Users/Keanu/AI-stepbystep/lab1/dueling-cats-2.png
 Okay, let's break down what we can gather about the image you provided:
 
 **Overall Impression:**
@@ -21,9 +25,15 @@ Okay, let's break down what we can gather about the image you provided:
 The image is a highly stylized, almost cartoonish, depiction of a cat and a dog engaged in a challenging and playful "duel." It's a visual metaphor for a struggle of opposing forces or a competition.  The style leans 
 heavily into a slightly exaggerated, slightly dreamlike aesthetic.
 ```
-You can close the model by typing `/bye`. One of the cats is apparently a dog, let's step it up to the gemma:4b model.
+Close Ollama by typing `/bye`. 
+
+One of the cats is apparently a dog. Per <a href="https://ai.google.dev/gemma/docs/core">Google</a> "The Gemma3 1B size models are text only and *do not support image input*. The model was unable to fully understand the picture and what we experienced was a form of AI <a href="https://www.ibm.com/think/topics/ai-hallucinations">hallucination</a>. 
+
+To increase accuracy let's step it up to the gemma:4b model.
+*Note: This will take longer as it's a larger LLM and we're running on non-AI optimized hardware.*
+
 5. Type `ollama run gemma3:4b`, and then after the download completes, re-enter the same prompt as before.
-```>>> what can you tell me about this picture? /Users/j.rahm/PycharmProjects/AI-stepbystep/lab1/dueling-cats-2.png
+```>>> what can you tell me about this picture? /Users/Keanu/AI-stepbystep/lab1/dueling-cats-2.png
 Okay, let's break down this wonderfully surreal image! 
 
 **What it depicts:**
@@ -36,15 +46,17 @@ This took about 30 seconds to process, but far more accurate to my picture!
 # Bonus challenge
 
 When running ollama on your laptop, it runs an http service on localhost port 11434, so you can send queries to ollama via another service. Let's try that!
-<pre>curl http://localhost:11434/api/generate -d \'{
+<pre>curl http://localhost:11434/api/generate -d \
+'{
   "model": "gemma3:4b",
-  "prompt": "what can you tell me about this picture? /Users/j.rahm/PycharmProjects/AI-stepbystep/lab1/dueling-cats-2.png"
+  "prompt": "what can you tell me about this picture? /Users/Keanu/AI-stepbystep/lab1/dueling-cats-2.png"
 }'
 </pre>
 
 Huzzah! That works. But...the output is not, uh, great:
 
-<pre>{"model":"gemma3:4b","created_at":"2025-04-14T22:13:44.058712Z","response":"Okay","done":false}
+<pre>
+{"model":"gemma3:4b","created_at":"2025-04-14T22:13:44.058712Z","response":"Okay","done":false}
 {"model":"gemma3:4b","created_at":"2025-04-14T22:13:44.08365Z","response":",","done":false}
 {"model":"gemma3:4b","created_at":"2025-04-14T22:13:44.110131Z","response":" let","done":false}
 {"model":"gemma3:4b","created_at":"2025-04-14T22:13:44.135686Z","response":"'","done":false}
@@ -52,16 +64,19 @@ Huzzah! That works. But...the output is not, uh, great:
 {"model":"gemma3:4b","created_at":"2025-04-14T22:13:44.188051Z","response":" analyze","done":false}
 </pre>
 
-Ollama streams the response word-by-word by default. To fix this, just set stream to false:
+Ollama streams the response word-by-word by default. To fix this, we can set stream to false:
 
-<pre>curl http://localhost:11434/api/generate -d \'{
+<pre>curl http://localhost:11434/api/generate -d \
+'{
   "model": "gemma3:4b",
-  "prompt": "what can you tell me about this picture? /Users/j.rahm/PycharmProjects/AI-stepbystep/lab1/dueling-cats-2.png",
+  "prompt": "what can you tell me about this picture? /Users/Keanu/AI-stepbystep/lab1/dueling-cats-2.png",
   "stream": false
 }'
 </pre>
 
+That looks better, not great, but better. Remember we're calling the API so it's not meant for normal consumption but at least we can distil the output easier.
+
 # Conclusion
 
-Ollama is a foundational block to many of the other services that build on top of or are adjacent to it. Dig in, get comfortable, and share any crazy stories from your lab exercises with the class!
+Ollama is the foundation for many AI tools you'll use in later labs. Now you have your first model is running - boom, you're officially in the AI game! - Play around and get comfortable with the basics, then explore and see what's next!
 
