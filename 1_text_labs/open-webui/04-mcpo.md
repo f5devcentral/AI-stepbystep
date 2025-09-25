@@ -223,7 +223,7 @@ like this before you hit execute:
 
 ![f5mcp test](images/f5mcp_test.png)
 
-8. After hitting execute, you should see in teh response body the list of your BIG-IP pool names.
+8. After hitting execute, you should see in the response body the list of your BIG-IP pool names.
 
 ![f5mcp test result](images/f5mcp_test_result.png)
 
@@ -236,7 +236,7 @@ icon in the upper right corner, then click settings.
 
 ![open-webui home](images/owui_home.png)
 
-2. In the settings window, click teh External Tools in the left bar, then click the **+** to the far left to add a tool.
+2. In the settings window, click the External Tools in the left bar, then click the **+** to the far left to add a tool.
 
 ![open-webui settings](images/owui_settings.png)
 
@@ -267,6 +267,18 @@ failures) and a follow up prompt for the specifics of one pool are below.
 
 ![open-webui mcp success](images/owui_mcp_success.png)
 
+And in the background stdout from the docker compose processes, you can see the proxy and mcp server transaactions:
+
+```
+mcpo   | 2025-09-25 15:31:20,854 - INFO - Calling endpoint: obj_list, with args: {'obj_type': 'pool', 'obj_name': ''}
+f5mcp  | INFO:     172.18.0.5:46748 - "POST /mcp HTTP/1.1" 200 OK
+mcpo   | 2025-09-25 15:31:20,857 - INFO - HTTP Request: POST http://f5mcp:8081/mcp "HTTP/1.1 200 OK"
+mcpo   | INFO:     172.16.2.117:21707 - "POST /f5mcp/obj_list HTTP/1.1" 200 OK
+mcpo   | 2025-09-25 15:33:26,193 - INFO - Calling endpoint: obj_list, with args: {'obj_type': 'pool', 'obj_name': 'mcp_server_pool'}
+f5mcp  | INFO:     172.18.0.5:45018 - "POST /mcp HTTP/1.1" 200 OK
+mcpo   | 2025-09-25 15:33:26,197 - INFO - HTTP Request: POST http://f5mcp:8081/mcp "HTTP/1.1 200 OK"
+mcpo   | INFO:     172.16.2.117:48535 - "POST /f5mcp/obj_list HTTP/1.1" 200 OK
+```
 Huzzah! The MCP server here is quite dumb and created only to keep the scope very small and focused on building out 
 an AI infrastructure in your home lab. For BIG-IP specifically, one of our [DevCentral](https://community.f5.com) 
 MVP's [mihaic](https://community.f5.com/users/mihaic/72830) created a more robust CRUD 
