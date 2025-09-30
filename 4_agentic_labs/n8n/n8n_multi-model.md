@@ -20,10 +20,7 @@ This lab assumes that you will be installing your models on one server and your 
 3. Install Ollama on the LLM Server using docker:
 `docker run -d -v model_data:/root/.ollama -p 11434:11434 --name ollama ollama/ollama`
 4. Install the models on the LLM Server that we'll be working with in this lab:
-`docker exec ollama ollama pull deepseek-r1:1.5b`
-`docker exec ollama ollama pull llama3.2:3b`
-`docker exec ollama ollama pull deepseek-r1:7b`
-`docker exec ollama ollama pull codellama`
+`docker exec ollama ollama pull deepseek-r1:1.5b; docker exec ollama ollama pull llama3.2:3b; docker exec ollama ollama pull deepseek-r1:7b; docker exec ollama ollama pull codellama`
 5. Install n8n on the App Server:
 `docker volume create n8n_data; docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n`
 6. Now, it's time to open your browser to <http://192.168.1.233:5678> (but use your host machine's IP address instead of that one) and create an owner account for the instance:
