@@ -59,33 +59,33 @@ This lab assumes that you will be installing your models on one server and your 
 19. Classifier Parameters: Click the 'Add Option' drop-down, select 'System Prompt Template' and enter the following text or similar: 'Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below: If they explicitly ask for coding help, do not fail and classify the message as 'Coding'. If they explicitly ask for reasoning help, do not fail and classify the message as 'Reasoning'. Otherwise, Send the  {{ $json.chatInput }} on to the next agent.'
    ![img28](images/28-opt-sys.png)
 20. Classifier Settings: Select 'Retry On Fail', leave the default settings.
-21. Classifier Settings: In the 'On Error' drop-down, ensure that 'Stop Workflow' is selected and go back to the canvas.
-22. Click the Model '+' at the bootom of your Text Classifier object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:1.5b, name it 'deepseek-r1:1.5b' and return to the canvas.
+   ![img47](images/47-class-retry.png)
+21. Click the Model '+' at the bootom of your Text Classifier object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:1.5b, name it 'deepseek-r1:1.5b' and return to the canvas.
    ![img29](images/29-text-mod.png)
    ![img30](images/30-new-creds.png)
    ![img31](images/30-ip-creds.png)
    ![img32](images/32-deep1.5.png)
-23. Click the Reasoning '+' at the right edge of your Text Classifier object and add an AI Agent object. This will immediately open the agent's configuration screen.
+22. Click the Reasoning '+' at the right edge of your Text Classifier object and add an AI Agent object. This will immediately open the agent's configuration screen.
    ![img33](images/33-agent-add.png)
-24. Click the Settings tab, select 'Retry On Fail' and leave the default settings. Rename the node 'Reasoning Agent' and return to canvas.
+23. Click the Settings tab, select 'Retry On Fail' and leave the default settings. Rename the node 'Reasoning Agent' and return to canvas.
    ![img34](images/34-retry-fail.png)
-25. Click the Chat Model '+' at the bottom of your Reasoning Agent object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:7b, name it 'deepseek-r1:7b' and return to the canvas.
+24. Click the Chat Model '+' at the bottom of your Reasoning Agent object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:7b, name it 'deepseek-r1:7b' and return to the canvas.
    ![img35](images/35-mod-deep-7b.png)
-26. Click the Coding '+' at the right edge of your Text Classifier object and add an AI Agent object. This will immediately open the agent's configuration screen.
+25. Click the Coding '+' at the right edge of your Text Classifier object and add an AI Agent object. This will immediately open the agent's configuration screen.
    ![img36](images/36-add-code.png)
-27. Click the Settings tab, select 'Retry On Fail' and leave the default settings. Rename the node 'Coding Agent' and return to canvas.
+26. Click the Settings tab, select 'Retry On Fail' and leave the default settings. Rename the node 'Coding Agent' and return to canvas.
    ![img37](images/37-retry-fail.png)
-28. Click the Chat Model '+' at the bottom of your Coding Agent object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model codellama:latest, name it 'codellama' and return to the canvas.
+27. Click the Chat Model '+' at the bottom of your Coding Agent object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model codellama:latest, name it 'codellama' and return to the canvas.
    ![img38](images/38-mod-codellama.png)
    ![img39](images/39-mod-codellama.png)
-29. Click the Other '+' at the right edge of your Text Classifier object and add an AI Agent object. This will immediately open the agent's configuration screen.
+28. Click the Other '+' at the right edge of your Text Classifier object and add an AI Agent object. This will immediately open the agent's configuration screen.
    ![img40](images/40-add-gen.png)
-30. Click the Settings tab, select 'Retry On Fail' and leave the default settings. Rename the node 'Generalist Agent' and return to canvas.
+29. Click the Settings tab, select 'Retry On Fail' and leave the default settings. Rename the node 'Generalist Agent' and return to canvas.
    ![img41](images/41-retry-fail.png)
-31. Click the Chat Model '+' at the bottom of your Other Agent object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:1.5b, name it 'deepseek-r1:1.5b' and return to the canvas.
+30. Click the Chat Model '+' at the bottom of your Other Agent object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:1.5b, name it 'deepseek-r1:1.5b' and return to the canvas.
    ![img42](images/42-mod-deep.png)
    ![img43](images/43-mod-deep.png)
-32. Now, it's time to play. Open your n8n chat interface, if you haven't already and enter some prompts. These will take a bit. Watch how the objects in your flow pass data to one another by clicking on the object and observing the data that is input and output through each step in the flow. Observe how poor prompt engineering yields lessser results. What else do you see happening? Perhaps adjust your system prompt to the Text Classifier's attached model. What happens to your results if you change models on your agents?
+31. Now, it's time to play. Open your n8n chat interface, if you haven't already and enter some prompts. These will take a bit. Watch how the objects in your flow pass data to one another by clicking on the object and observing the data that is input and output through each step in the flow. Observe how poor prompt engineering yields lessser results. What else do you see happening? Perhaps adjust your system prompt to the Text Classifier's attached model. What happens to your results if you change models on your agents?
    ![img44](images/44-finished.png)
    ![img45](images/45-test1.png)
    ![img45](images/45-test2.png)
