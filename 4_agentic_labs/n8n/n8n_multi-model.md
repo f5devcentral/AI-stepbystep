@@ -63,14 +63,14 @@ This lab assumes that you will be installing your models on one server and your 
 21. Click the Model '+' at the bootom of your Text Classifier object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:1.5b, name it 'deepseek-r1:1.5b' and return to the canvas.
    ![img29](images/29-text-mod.png)
    ![img30](images/30-new-creds.png)
-   ![img31](images/30-ip-creds.png)
+   ![img31](images/31-ip-creds.png)
    ![img32](images/32-deep1.5.png)
 22. Click the Reasoning '+' at the right edge of your Text Classifier object and add an AI Agent object. This will immediately open the agent's configuration screen.
    ![img33](images/33-agent-add.png)
 23. Click the Settings tab, select 'Retry On Fail' and leave the default settings. Rename the node 'Reasoning Agent' and return to canvas.
    ![img34](images/34-retry-fail.png)
 24. Click the Chat Model '+' at the bottom of your Reasoning Agent object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:7b, name it 'deepseek-r1:7b' and return to the canvas.
-   ![img35](images/35-mod-deep-7b.png)
+   ![img35](images/35-mod-deep7b.png)
 25. Click the Coding '+' at the right edge of your Text Classifier object and add an AI Agent object. This will immediately open the agent's configuration screen.
    ![img36](images/36-add-code.png)
 26. Click the Settings tab, select 'Retry On Fail' and leave the default settings. Rename the node 'Coding Agent' and return to canvas.
