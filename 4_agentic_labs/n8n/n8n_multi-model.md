@@ -43,21 +43,21 @@ This lab assumes that you will be installing your models on one server and your 
    ![img21](images/21-add-class.png)
 
    ![img22](images/22-add-class.png)
-14. Classifier Parameters: Click and hold the 'chatInput' object in the JSON input view, then drag it into the 'Text to Classify' box.
+14. Classifier Parameters: Select the JSON view on the left input panel, then click and hold the 'chatInput' object in the JSON input view and drag it into the 'Text to Classify' box.
    ![img23](images/23-drag-input.png)
-15. Classifier Parameters: Click the 'Add Category' button. For the Category, enter 'Resoning' and for a description, enter 'If reasoning need is indicated by the chat message, this is the category to assign.'
+15. Classifier Parameters: Click the 'Add Category' button. For the Category, enter 'Reasoning' and for a description, enter 'If reasoning need is indicated by the chat message, this is the category to assign.'
    ![img24](images/24-cat-reas.png)
 16. Classifier Parameters: Click the 'Add Category' button again. For the Category, enter 'Coding' and for the decription, enter 'If the chat message indicates a need to code or asks for help with computer languages and scripting languages like iRules, JSON or node.js, assign this category.'
    ![img25](images/25-cat-code.png)
 17. Classifier Parameters: Click the 'Add Option' drop-down, select 'Allow Multiple Cases To Be True' and enable the feature.
    ![img26](images/26-opt-mult.png)
-18. Add Option' drop-down, select 'When No Clear Match' and select the 'Output on Extra, Other Branch' option.
+18. Classifier Parameters: Click the 'Add Option' drop-down, select 'When No Clear Match' and select the 'Output on Extra, Other Branch' option.
    ![img27](images/27-opt-other.png)
 19. Classifier Parameters: Click the 'Add Option' drop-down, select 'System Prompt Template' and enter the following text or similar: 'Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below: If they explicitly ask for coding help, do not fail and classify the message as 'Coding'. If they explicitly ask for reasoning help, do not fail and classify the message as 'Reasoning'. Otherwise, Send the  {{ $json.chatInput }} on to the next agent.'
    ![img28](images/28-opt-sys.png)
-20. Classifier Settings: Select 'Retry On Fail', leave the default settings.
+20. Classifier Settings: Select 'Retry On Fail', leave the default settings and return to the canvas.
    ![img47](images/47-class-retry.png)
-21. Click the Model '+' at the bootom of your Text Classifier object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:1.5b, name it 'deepseek-r1:1.5b' and return to the canvas.
+21. Click the Model '+' at the bottom of your Text Classifier object and add an Ollama model using your existing Ollama credentials or create new ones if this is your first time through (pictures included - replace 'localhost' with the IP of the server that ollama lives on). In the model drop-down, select the model deepseek-r1:1.5b, name it 'deepseek-r1:1.5b' and return to the canvas.
    ![img29](images/29-text-mod.png)
    ![img30](images/30-new-creds.png)
    ![img31](images/31-ip-creds.png)
@@ -82,7 +82,7 @@ This lab assumes that you will be installing your models on one server and your 
 30. Click the Chat Model '+' at the bottom of your Other Agent object and add an Ollama model using your Ollama credentials. In the model drop-down, select the model deepseek-r1:1.5b, name it 'deepseek-r1:1.5b' and return to the canvas.
    ![img42](images/42-mod-deep.png)
    ![img43](images/43-mod-deep.png)
-31. Now, it's time to play. Open your n8n chat interface, if you haven't already and enter some prompts. These will take a bit. Watch how the objects in your flow pass data to one another by clicking on the object and observing the data that is input and output through each step in the flow. Observe how poor prompt engineering yields lessser results. What else do you see happening? Perhaps adjust your system prompt to the Text Classifier's attached model. What happens to your results if you change models on your agents?
+31. Now, it's time to play. Open your n8n chat interface, if you haven't already and enter some prompts. These will take a bit. Watch how the objects in your flow pass data to one another by clicking on the object and observing the data that is input and output through each step in the flow. Observe how poor prompt engineering yields lesser results. What else do you see happening? Perhaps adjust your system prompt to the Text Classifier's attached model. What happens to your results if you change models on your agents?
    ![img44](images/44-finished.png)
    ![img45](images/45-test1.png)
    ![img45](images/45-test2.png)
