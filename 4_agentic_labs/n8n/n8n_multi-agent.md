@@ -1,4 +1,4 @@
-# N8N Multi-Model Workflow Lab
+# n8n Multi-Agent Workflow Lab
 
 ## Goals
 
