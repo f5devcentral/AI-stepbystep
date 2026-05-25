@@ -1,18 +1,18 @@
 # OpenClaw Network Boundary
 
-A complete, self-contained Docker Compose stack that runs [OpenClaw](https://openclaw.ai/) inside a secure network boundary: automatic TLS termination, kernel-level outbound traffic isolation via mitmproxy, and OpenTelemetry observability for every request in and every call out.
+A complete, self-contained Docker Compose stack that runs [OpenClaw](https://openclaw.ai/) inside a secure network boundary: automatic TLS termination, kernel-level outbound traffic isolation via nginx forward proxy, and OpenTelemetry observability for every request in and every connection out.
 
 ## The core idea
 
-**Containment first.** OpenClaw runs in a container with no direct internet access. iptables OUTPUT rules enforced at the kernel level prevent any process inside the container from bypassing the proxy — even if the application-layer `HTTP_PROXY` env vars were ignored. All outbound traffic is forced through mitmproxy, which decrypts, records, and re-encrypts every HTTPS connection the agent makes. Nothing leaves unobserved.
+**Containment first.** OpenClaw runs in a container with no direct internet access. iptables OUTPUT rules enforced at the kernel level prevent any process inside the container from bypassing the proxy — even if the application-layer `HTTP_PROXY` env vars were ignored. All outbound traffic is forced through the nginx forward proxy. Nothing leaves uncontrolled.
 
-**nginx as the public entry point.** nginx sits in front of OpenClaw as the sole inbound path. The gateway is never exposed directly. Everything that makes securing an OpenClaw deployment hard — access control, TLS certificates, routing — gets solved at the nginx layer, leaving OpenClaw's internals untouched.
+**nginx as both the front door and the back gate.** nginx handles two roles in this stack. Inbound: it terminates TLS for external clients and reverse-proxies to OpenClaw. Outbound: it runs a forward proxy on port 8080 that receives all traffic from OpenClaw via `HTTP_PROXY` / `HTTPS_PROXY`. For HTTPS connections, nginx establishes a CONNECT tunnel — it sees the destination host and port but does **not** decrypt the content. Access control (which destinations are allowed) is enforced at this layer. No MITM, no CA cert injection, full privacy compliance.
 
 **Certificates handled natively.** nginx uses the [nginx-acme module](https://github.com/nginx/nginx-acme) to obtain and renew a Let's Encrypt certificate automatically via HTTP-01 challenge. No external tools, no credential management, no renewal cron jobs — the module handles the full certificate lifecycle inside the nginx process.
 
-**Full observability.** Both nginx (inbound) and mitmproxy (outbound) emit OpenTelemetry spans to a local collector. Every request in and every call out is recorded with method, URL, status, and timing. The result is a complete audit trail of what the agent did and what it said to whom.
+**Observability at the connection level.** nginx emits OpenTelemetry spans for both inbound requests and outbound connections. Inbound spans include method, path, status, and client IP. Outbound HTTPS spans record the destination host and port (the tunnel endpoint). Outbound HTTP spans also include method and status. You know what the agent connected to and whether it succeeded — without inspecting the payload.
 
-**First control, next shape the traffic.** We collect OTel with the intent of analyzing calls that matter and configuring both the nginx ingress and mitmproxy egress (and iptables) in a way that will allow OpenClaw to do **ONLY** what we allow it to. No more worrying about what it does. We force it to play by the rules.
+**Control through access, not inspection.** We use nginx's forward proxy as the enforcement point: allow only the destinations OpenClaw needs (your LLM API, tool endpoints) and deny everything else. Configuration is explicit, auditable, and does not require decrypting traffic.
 
 ---
 
@@ -23,8 +23,8 @@ By the end of this lab, you will have:
 - OpenClaw running behind a network boundary with kernel-level outbound isolation
 - Ollama serving a local LLM that OpenClaw uses for inference
 - A valid Let's Encrypt TLS certificate issued and renewed automatically by nginx
-- All outbound traffic from OpenClaw intercepted and decoded by mitmproxy
-- OpenTelemetry spans for both inbound and outbound traffic written to a local JSON Lines file
+- All outbound traffic from OpenClaw controlled by the nginx forward proxy
+- OpenTelemetry spans for both inbound requests and outbound connections written to a local JSON Lines file
 
 ---
 
@@ -33,11 +33,13 @@ By the end of this lab, you will have:
 ```
 Internet ──HTTPS──▶ nginx :OPENCLAW_HOST_PORT (TLS termination) ──▶ openclaw :19000
                          │
-                   OTel inbound spans
+                   OTel inbound spans (method, path, status, client IP)
 
-openclaw ──iptables enforced──▶ mitmproxy :8080 ──▶ Internet
+openclaw ──iptables enforced──▶ nginx :8080 (forward proxy) ──▶ Internet
                                      │
-                               OTel outbound spans
+                           OTel outbound spans
+                           (HTTPS: host:port only — no content)
+                           (HTTP:  host, method, status)
                                      │
                          otel-collector :4317
                                      │
@@ -203,18 +205,14 @@ docker compose up -d --build
 
 **What you'll see:**
 
-Docker builds five container images on first run. The nginx image compiles the nginx-acme Rust module against the nginx source — this takes **3–5 minutes** on first build. Subsequent starts use the cached image and are fast.
+Docker builds four container images on first run.
 
 ```
-[+] Building ...
- => [nginx builder] cargo build --release          180s
- => [nginx] COPY --from=builder libnginx_acme.so    0s
-[+] Running 5/5
+[+] Running 4/4
  ✔ Container otel-collector  Started
  ✔ Container ollama          Started
- ✔ Container mitmproxy       Started
- ✔ Container openclaw        Started
  ✔ Container nginx           Started
+ ✔ Container openclaw        Started
 ```
 
 Watch Ollama pull the model (5–15 minutes depending on model size and network):
@@ -281,14 +279,11 @@ docker compose ps
 NAME             STATUS
 nginx            Up X minutes
 openclaw         Up X minutes
-mitmproxy        Up X minutes
 otel-collector   Up X minutes
 ollama           Up X minutes
 ```
 
-![Docker Compose ps](./images/step-5-docker-compose.png)
-
-**Why it matters:** All five containers must be `Up`. If any shows `Exited`, inspect its logs:
+**Why it matters:** All four containers must be `Up`. If any shows `Exited`, inspect its logs:
 
 ```bash
 docker compose logs <container-name>
@@ -334,41 +329,57 @@ Return to the browser — you should now see the OpenClaw chat interface.
 
 ![It works!](./images/step-6-4-openclaw-works.png)
 
-**Why it matters:** OpenClaw is now running behind the network boundary — all outbound calls it makes are intercepted by mitmproxy and recorded as OTel spans.
+**Why it matters:** OpenClaw is now running behind the network boundary. All outbound connections it makes pass through the nginx forward proxy.
 
 ---
 
-## Step 8: Inspect outbound traffic through mitmproxy
+## Step 8: Inspect outbound connections through the nginx forward proxy
 
 **Do this:**
 
 ```bash
-docker logs -f mitmproxy
+docker compose logs -f nginx
 ```
 
 **What you'll see:**
 
+HTTPS CONNECT tunnels (OpenClaw reaching an external API):
+
 ```
-[otel-addon] outbound.request POST https://api.example.com/v1/chat 200 412ms
+nginx  | 172.20.0.3 - - [25/May/2026:10:14:02 +0000] "CONNECT api.example.com:443 HTTP/1.1" 200 -
 ```
 
-![mitmproxy log output](./images/step-7-mitm-example.png)
+Plain HTTP forward proxy requests:
 
-To explore traffic interactively in the mitmproxy web UI, expose its interface temporarily:
+```
+nginx  | 172.20.0.3 - - [25/May/2026:10:14:03 +0000] "POST http://api.example.com/v1/chat HTTP/1.1" 200 1234
+```
+
+**Why it matters:** The nginx access log shows every outbound connection: the source (openclaw container IP), the destination host and port, and the connection status. For HTTPS tunnels nginx sees the destination but not the payload — this is by design. You have access control without content inspection.
+
+### Restricting outbound destinations
+
+To limit OpenClaw to only specific hosts, edit the `map` block in `services/nginx/nginx.conf.template` (commented example is included). For example, to allow only your LLM API provider:
+
+```nginx
+map $host $proxy_allowed {
+    default              0;
+    ~*\.openai\.com      1;
+    ~*\.anthropic\.com   1;
+}
+```
+
+Then add this guard in the `location /` block:
+
+```nginx
+if ($proxy_allowed = 0) { return 403; }
+```
+
+Rebuild nginx after any config change:
 
 ```bash
-docker exec -it mitmproxy mitmweb --web-host 0.0.0.0 --web-port 8081 --mode regular@8082
+docker compose up -d --build nginx
 ```
-
-Then open `http://<host-ip>:8081` in a browser.
-
-![mitmproxy web launch](./images/step-7-mitm-expose.png)
-
-![mitmproxy web UI](./images/step-7-mitm-web.png)
-
-**Why it matters:** Every HTTPS call OpenClaw makes — to LLM APIs, external services, anything — is decrypted and logged here. This is your first view into what the agent is actually doing on the network.
-
-> **Only expose the mitmproxy web UI in a secured lab environment.** Flows captured by the running mitmdump will not appear in this UI — it is a separate proxy instance useful for interactive inspection only.
 
 ---
 
@@ -388,19 +399,19 @@ Inbound requests from nginx:
 {"name":"inbound.request","attributes":{"http.client_ip":"203.0.113.5","http.method":"GET","http.path":"/chat","http.status":"200"}}
 ```
 
-Outbound requests intercepted by mitmproxy:
+Outbound HTTPS CONNECT tunnels (destination host and port only — no payload):
 
 ```json
-{"name":"outbound.request","attributes":{"http.method":"POST","http.url":"https://api.example.com/v1/chat","http.status_code":200,"net.peer.name":"api.example.com","tls.version":"TLSv1.3","http.response_time_ms":412}}
+{"name":"outbound.connect","attributes":{"outbound.host":"api.example.com","outbound.port":"443"}}
 ```
 
-If OpenClaw encounters a service with certificate pinning:
+Outbound plain HTTP requests:
 
 ```json
-{"name":"outbound.tls_error","attributes":{"tls.pinning_detected":true,"net.peer.name":"pinned-service.example.com"}}
+{"name":"outbound.request","attributes":{"outbound.host":"api.example.com","outbound.method":"POST","outbound.status":"200"}}
 ```
 
-**Why it matters:** The JSON Lines file is a durable, structured audit trail of everything that happened — who called OpenClaw (inbound) and who OpenClaw called (outbound). You now have the raw material to write allow/deny policies or alert on unexpected destinations.
+**Why it matters:** The JSON Lines file is a durable, structured audit trail of what connected where. Combined with the nginx access log, you can verify that OpenClaw is only reaching the destinations you expect — and that the forward proxy is enforcing your access control rules.
 
 ---
 
@@ -420,7 +431,7 @@ docker logs openclaw | grep iptables
 
 ![iptables isolation confirmation](./images/step-9-iptables.png)
 
-**Why it matters:** This confirms the kernel-level firewall is active inside the openclaw container. Any direct outbound internet connection that bypasses mitmproxy is dropped at the kernel — not just blocked at the application layer. Even if OpenClaw ignored the `HTTP_PROXY` env var, it could not reach the internet directly.
+**Why it matters:** This confirms the kernel-level firewall is active inside the openclaw container. Any direct outbound internet connection that bypasses the nginx forward proxy is dropped at the kernel — not just blocked at the application layer. Even if OpenClaw ignored the `HTTP_PROXY` env var, it could not reach the internet directly.
 
 ---
 
@@ -443,7 +454,7 @@ You should see the initial issuance lines. The module logs renewal activity to n
 | Symptom | Check |
 |---|---|
 | nginx exits immediately on start | Run `docker compose logs nginx` — likely a config render error; check that all env vars in `.env` are set |
-| `module version X instead of Y` error | The nginx-acme module was compiled against a different nginx version than is installed. Rebuild with `docker compose build --no-cache nginx` |
+| nginx exits with `unknown directive` | Module mismatch — rebuild with `docker compose build --no-cache nginx` |
 | HTTP-01 challenge fails / cert not issued | Port 80 must be publicly reachable. Test with `curl http://<ACME_DOMAIN>/` from outside your network. Check firewall, port forwarding, and ISP blocking |
 | IPv6 `Network is unreachable` in logs | Harmless — the host has no IPv6. The `ipv6=off` resolver option suppresses this |
 | Browser shows certificate error | Cert may still be issuing — wait 30 seconds and reload. Check `docker compose logs nginx` for challenge 200 responses |
@@ -452,8 +463,8 @@ You should see the initial issuance lines. The module logs renewal activity to n
 | Ollama fails on x86 (`unknown runtime`) | Set `OLLAMA_RUNTIME=` (empty) in `.env` |
 | Ollama running on CPU instead of GPU | Ensure `OLLAMA_RUNTIME=nvidia` and NVIDIA Container Toolkit is installed |
 | iptables isolation warning in openclaw logs | Ensure `cap_add: NET_ADMIN` is present in the compose service definition |
-| No outbound spans in OTel file | Confirm openclaw is proxying through mitmproxy (`docker logs openclaw`) |
-| TLS errors in openclaw outbound logs | Verify `NODE_EXTRA_CA_CERTS` is set and `mitm-certs` volume is mounted |
+| No outbound connections in nginx log | Check that `HTTP_PROXY` and `HTTPS_PROXY` are set to `http://nginx:8080` in the openclaw service |
+| Outbound connection returns 403 | Destination is blocked by the nginx forward proxy allowlist — add the host to the `map` block in `nginx.conf.template` |
 
 ---
 
@@ -486,8 +497,7 @@ docker compose down -v
 ## Next steps
 
 - Forward spans to a backend like Jaeger, Tempo, or an OTLP-compatible SaaS by modifying `services/otel/collector.yaml`
-- Use the `outbound.tls_error` spans to identify which external services use certificate pinning
-- Tighten the mitmproxy ruleset to block categories of outbound calls entirely
+- Add an allowlist to the nginx forward proxy to restrict OpenClaw to only the destinations it needs — see the commented `map` block in `services/nginx/nginx.conf.template`
 - Switch to DNS-01 validation (no public port 80 required): [docs/dns-acme.md](docs/dns-acme.md)
 - Review the full technical reference: [docs/technical.md](docs/technical.md)
 

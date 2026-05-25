@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.0.0] — 2026-05-25
+
+### Changed
+- Replaced mitmproxy with nginx forward proxy as the outbound traffic control mechanism
+  - nginx 1.31.1-otel is the base image; HTTP forward proxy works natively on port 8080
+  - Plain HTTP outbound requests are still proxied and visible to nginx (host, method, status)
+  - openclaw now routes via `HTTP_PROXY=http://nginx:8080` / `HTTPS_PROXY=http://nginx:8080`
+  - Access control (allow/deny by destination host) is enforced at nginx; commented example allowlist pattern included in `nginx.conf.template`
+  - OTel spans: `outbound.connect` (HTTPS tunnels — host and port) and `outbound.request` (HTTP — host, method, status); rich content-level attributes from mitmproxy are no longer available by design
+
+### Removed
+- `mitmproxy` container and `services/mitmproxy/` directory
+- `mitm-certs` named volume — no CA cert injection required; openclaw trusts the destination server's certificate directly
+- `NODE_EXTRA_CA_CERTS` environment variable from the openclaw service
+- mitmproxy web UI (was exposed on host port 8081)
+- openclaw entrypoint step that waited for the mitmproxy CA cert to appear
+
+### Added
+- nginx forward proxy server block on port 8080 in `nginx.conf.template`
+  - `proxy_connect` for HTTPS CONNECT tunneling
+  - OTel instrumentation via `ngx_otel_module` for both HTTP and HTTPS outbound connections
+  - Documented allowlist pattern for restricting outbound destinations by hostname
+
 ## [1.0.2] — 2026-04-23
 
 ### Changed

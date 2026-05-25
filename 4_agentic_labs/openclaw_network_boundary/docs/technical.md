@@ -2,21 +2,22 @@
 
 ## Overview
 
-A self-contained Docker Compose stack that wraps an OpenClaw AI gateway and an Ollama LLM backend inside a secure network envelope. All inbound HTTPS traffic is proxied and traced by nginx. All outbound traffic from OpenClaw is intercepted and decoded by mitmproxy. Both emit OpenTelemetry spans to a local collector that writes JSON Lines to a persistent volume.
+A self-contained Docker Compose stack that wraps an OpenClaw AI gateway and an Ollama LLM backend inside a secure network envelope. All inbound HTTPS traffic is proxied and traced by nginx. All outbound traffic from OpenClaw is controlled by nginx's forward proxy — nginx establishes CONNECT tunnels for HTTPS (sees destination host:port, not content) and proxies HTTP requests directly. Both paths emit OpenTelemetry spans to a local collector that writes JSON Lines to a persistent volume.
 
 ---
 
 ## Architecture
 
-
 ```
 Internet ──HTTPS──▶ nginx :OPENCLAW_HOST_PORT (TLS termination) ──▶ openclaw :19000
                          │
-                   OTel inbound spans
+                   OTel inbound spans (method, path, status, client IP)
 
-openclaw ──iptables enforced──▶ mitmproxy :8080 ──▶ Internet
+openclaw ──iptables enforced──▶ nginx :8080 (forward proxy) ──▶ Internet
                                      │
-                               OTel outbound spans
+                           OTel outbound spans
+                           HTTPS: outbound.connect (host:port only)
+                           HTTP:  outbound.request (host, method, status)
                                      │
                          otel-collector :4317
                                      │
@@ -34,8 +35,8 @@ openclaw ───────────────────────�
 |---|---|---|
 | `net-internal` | openclaw, ollama | `internal: true` — LLM inference path only |
 | `net-ingress` | nginx, openclaw | nginx exposes `OPENCLAW_HOST_PORT` |
-| `net-proxy` | openclaw, mitmproxy | outbound proxy path |
-| `net-telemetry` | nginx, mitmproxy, otel-collector | `internal: true` — OTel spans only |
+| `net-proxy` | openclaw, nginx | outbound forward proxy path |
+| `net-telemetry` | nginx, otel-collector | `internal: true` — OTel spans only |
 | `net-pull` | ollama, nginx | internet access for model pulls and ACME challenges |
 
 ---
@@ -46,8 +47,7 @@ openclaw ───────────────────────�
 - **Image**: custom build from `./services/openclaw`
 - **Role**: AI gateway; handles browser pairing, token auth, and forwards LLM requests to Ollama
 - **Auth**: `GATEWAY_TOKEN` env var — required for all API and UI access
-- **Outbound proxy**: routes all HTTP/HTTPS via mitmproxy (`HTTP_PROXY`, `HTTPS_PROXY`)
-- **CA trust**: mounts `mitm-certs` volume at `/certs`; `NODE_EXTRA_CA_CERTS=/certs/mitmproxy-ca.pem`
+- **Outbound proxy**: routes all HTTP/HTTPS via nginx forward proxy (`HTTP_PROXY=http://nginx:8080`, `HTTPS_PROXY=http://nginx:8080`)
 - **State**: `/root/.openclaw` persisted in `openclaw-state` volume (pairing data, config)
 - **Exposes**: port `19000` to `net-ingress`
 
@@ -60,21 +60,16 @@ openclaw ───────────────────────�
 - **Networks**: `net-internal` (openclaw access) + `net-pull` (model downloads)
 
 ### nginx
-- **Image**: multi-stage build — builder compiles `ngx_http_acme_module.so` (Rust) against the exact nginx version; final stage is `nginx:1.27` + `nginx-module-otel` + acme module
-- **TLS**: Let's Encrypt cert obtained and renewed natively by `ngx_http_acme_module` via HTTP-01 challenge; port 80 must be publicly reachable
+- **Image**: `nginx:1.31.0-otel` — ships with `ngx_otel_module`, `ngx_http_acme_module`, and `ngx_http_proxy_connect_module`
+- **Inbound role**: terminates TLS on port `OPENCLAW_HOST_PORT`; Let's Encrypt cert issued and renewed natively by `ngx_http_acme_module` via HTTP-01 challenge; port 80 must be publicly reachable
+- **Outbound role**: forward proxy on port `8080`; openclaw routes through `HTTP_PROXY` / `HTTPS_PROXY`
+  - HTTPS CONNECT tunnels: nginx relays TCP between openclaw and the destination; sees host:port only, does not decrypt content (`proxy_connect` module)
+  - HTTP forward proxy: full request visible to nginx; host, method, status recorded in spans
 - **Cert state**: `nginx-acme-state` named volume at `/var/cache/nginx/acme-letsencrypt/`; persists account key and cert across container restarts
-- **Backend**: proxies to `openclaw:19000`
-- **OTel**: `otel_exporter { endpoint otel-collector:4317; }` + `otel_trace on`
-- **Span name**: `inbound.request`; attributes: `http.client_ip`, `http.method`, `http.path`, `http.status`
+- **OTel inbound**: `otel_exporter { endpoint otel-collector:4317; }` + `otel_trace on`; span name `inbound.request`
+- **OTel outbound**: span name `outbound.connect` (HTTPS tunnels) or `outbound.request` (HTTP)
 - **Startup**: renders nginx.conf from template, starts nginx; acme module issues cert on first request and handles all subsequent renewals in-process
-- **Renewal**: fully in-process — module monitors expiry and renews without dropping connections or restarting nginx
-
-### mitmproxy
-- **Image**: custom `mitmproxy/mitmproxy:latest` + OTel SDK
-- **CA cert**: auto-generated to `/home/mitmproxy/.mitmproxy/` on first run; shared via `mitm-certs` volume
-- **Web UI**: port `8081` exposed on the host for live traffic inspection
-- **OTel addon**: `otel_addon.py` emits `outbound.request` spans on every intercepted response; `outbound.tls_error` spans on certificate pinning failures
-- **Span attributes**: `http.method`, `http.url`, `http.status_code`, `net.peer.name`, `net.peer.port`, `tls.version`, `http.response_time_ms`
+- **Networks**: `net-ingress` + `net-proxy` + `net-telemetry` + `net-pull`
 
 ### otel-collector
 - **Image**: `otel/opentelemetry-collector-contrib:latest`
@@ -88,8 +83,7 @@ openclaw ───────────────────────�
 
 | Volume | Purpose |
 |---|---|
-| `mitm-certs` | mitmproxy CA cert + key; shared read-only with openclaw |
-| `otel-data` | `network-boundary-traffic.jsonl` — all spans from both sources |
+| `otel-data` | `network-boundary-traffic.jsonl` — all spans from inbound and outbound paths |
 | `nginx-acme-state` | nginx-acme module state (account key, cert, order data) at `/var/cache/nginx/acme-letsencrypt/` |
 | `openclaw-state` | OpenClaw pairing data and runtime config (`/root/.openclaw`) |
 | `ollama-models` | Downloaded Ollama model weights (`/data/models/ollama/models`) |
@@ -144,9 +138,47 @@ If port 80 cannot be exposed, the acme.sh DNS-01 approach is documented in [docs
 
 ---
 
+## Forward Proxy
+
+nginx listens on port `8080` as a forward proxy, accessible only from `net-proxy` (openclaw). openclaw is configured with `HTTP_PROXY=http://nginx:8080` and `HTTPS_PROXY=http://nginx:8080`. iptables inside the openclaw container blocks all direct internet access (public IPs), so the nginx forward proxy is the only outbound path.
+
+### HTTPS CONNECT tunneling
+
+When openclaw connects to an HTTPS endpoint, it sends a `CONNECT host:443 HTTP/1.1` request to nginx. nginx (via `ngx_http_proxy_connect_module`) establishes a TCP relay to the destination. openclaw performs the TLS handshake directly with the destination server — nginx is not in the TLS session and cannot see the payload. This means:
+
+- No CA cert injection required in openclaw
+- Full TLS integrity between openclaw and the destination
+- nginx sees only: source IP, destination host, destination port, connection status
+
+### HTTP forward proxy
+
+For plain HTTP outbound requests, nginx proxies the full request. Host, method, path, and status are available in both the nginx access log and OTel spans.
+
+### Access control
+
+By default, all outbound destinations are permitted. To restrict openclaw to specific hosts, edit the `map` block in `services/nginx/nginx.conf.template`:
+
+```nginx
+map $host $proxy_allowed {
+    default              0;
+    ~*\.openai\.com      1;
+    ~*\.anthropic\.com   1;
+}
+```
+
+Add the guard in `location /`:
+
+```nginx
+if ($proxy_allowed = 0) { return 403; }
+```
+
+Rebuild nginx after changes: `docker compose up -d --build nginx`
+
+---
+
 ## OTel Span Reference
 
-### `inbound.request` (nginx)
+### `inbound.request` (nginx — inbound reverse proxy)
 | Attribute | Value |
 |---|---|
 | `http.client_ip` | Client remote address |
@@ -154,22 +186,18 @@ If port 80 cannot be exposed, the acme.sh DNS-01 approach is documented in [docs
 | `http.path` | Request URI |
 | `http.status` | Response status code |
 
-### `outbound.request` (mitmproxy)
+### `outbound.connect` (nginx — HTTPS CONNECT tunnel)
 | Attribute | Value |
 |---|---|
-| `http.method` | HTTP method |
-| `http.url` | Full URL |
-| `http.status_code` | Response status code |
-| `net.peer.name` | Destination hostname |
-| `net.peer.port` | Destination port |
-| `tls.version` | TLS version negotiated |
-| `http.response_time_ms` | Round-trip time in ms |
+| `outbound.host` | Destination hostname (from CONNECT request) |
+| `outbound.port` | Destination port |
 
-### `outbound.tls_error` (mitmproxy)
+### `outbound.request` (nginx — HTTP forward proxy)
 | Attribute | Value |
 |---|---|
-| `tls.pinning_detected` | `true` |
-| `net.peer.name` | Destination hostname |
+| `outbound.host` | Destination hostname |
+| `outbound.method` | HTTP method |
+| `outbound.status` | Response status code |
 
 ---
 
@@ -187,9 +215,9 @@ docker compose up -d
 docker exec otel-collector sh -c "tail -f /data/network-boundary-traffic.jsonl"
 ```
 
-### Inspect outbound traffic in the mitmproxy web UI
-```
-http://<host>:8081
+### Watch outbound connections in real time
+```bash
+docker compose logs -f nginx
 ```
 
 ### Check status

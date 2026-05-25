@@ -3,7 +3,7 @@
 #
 # OpenClaw Network Boundary — Docker Compose
 # Full self-contained stack: OpenClaw gateway + Ollama LLM + TLS termination +
-# outbound traffic inspection via mitmproxy + OpenTelemetry observability.
+# outbound traffic control via nginx forward proxy + OpenTelemetry observability.
 #
 # Required variables (set in .env — see .env.example):
 #   GATEWAY_TOKEN, OPENCLAW_HOST, OPENCLAW_HOST_PORT,
@@ -30,12 +30,10 @@ services:
       OPENCLAW_USER: ${OPENCLAW_USER:-}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}
       OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-qwen2.5:3b}
-      # Route all outbound traffic through mitmproxy
-      HTTP_PROXY: http://mitmproxy:8080
-      HTTPS_PROXY: http://mitmproxy:8080
+      # Route all outbound traffic through the nginx forward proxy
+      HTTP_PROXY: http://nginx:8080
+      HTTPS_PROXY: http://nginx:8080
       NO_PROXY: ollama,otel-collector,localhost,127.0.0.1
-      # Trust mitmproxy CA cert for Node.js TLS
-      NODE_EXTRA_CA_CERTS: /certs/mitmproxy-ca.pem
       # Host IP/hostname used in CORS origins
       OPENCLAW_HOST: ${OPENCLAW_HOST}
       OPENCLAW_HOST_PORT: ${OPENCLAW_HOST_PORT:-19000}
@@ -43,7 +41,6 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
-      - mitm-certs:/certs:ro
       - openclaw-state:/root/.openclaw
     networks:
       - net-internal
@@ -51,7 +48,6 @@ services:
       - net-ingress
     depends_on:
       - ollama
-      - mitmproxy
     expose:
       - "19000"
 
@@ -79,26 +75,11 @@ services:
       - net-internal
       - net-pull
 
-  # ── mitmproxy forward proxy ─────────────────────────────────────────────────
-  mitmproxy:
-    build:
-      context: ./services/mitmproxy
-      dockerfile: Dockerfile
-    container_name: mitmproxy
-    restart: unless-stopped
-    volumes:
-      - mitm-certs:/home/mitmproxy/.mitmproxy
-    networks:
-      - net-proxy
-      - net-telemetry
-    expose:
-      - "8080"
-    ports:
-      - "8081:8081"
-
-  # ── nginx inbound reverse proxy + ACME cert management ─────────────────────
-  # ngx_http_acme_module runs inside nginx — no external tooling needed.
-  # Port 80 must be publicly reachable for the HTTP-01 challenge.
+  # ── nginx: inbound reverse proxy + outbound forward proxy + ACME ───────────
+  # Inbound (port 19000 HTTPS + port 80 HTTP-01 ACME): terminates TLS for clients
+  # Outbound (port 8080): CONNECT tunnel for HTTPS, plain proxy for HTTP.
+  #   openclaw routes through HTTP_PROXY/HTTPS_PROXY — nginx controls access,
+  #   does NOT decrypt HTTPS content (no MITM).
   nginx:
     build:
       context: ./services/nginx
@@ -118,10 +99,10 @@ services:
       - nginx-acme-state:/var/cache/nginx/acme-letsencrypt
     networks:
       - net-ingress
+      - net-proxy
       - net-telemetry
       - net-pull
     depends_on:
-      - openclaw
       - otel-collector
 
   # ── OpenTelemetry Collector ─────────────────────────────────────────────────
@@ -141,7 +122,6 @@ services:
 
 # ── Named volumes ───────────────────────────────────────────────────────────
 volumes:
-  mitm-certs:
   otel-data:
   nginx-acme-state:
   openclaw-state:
@@ -156,10 +136,10 @@ networks:
   # Inbound path — nginx ↔ openclaw
   net-ingress:
 
-  # Outbound proxy path — openclaw → mitmproxy → internet
+  # Outbound proxy path — openclaw → nginx forward proxy → internet
   net-proxy:
 
-  # Telemetry path — nginx, mitmproxy, otel-collector; internal only
+  # Telemetry path — nginx, otel-collector; internal only
   net-telemetry:
     internal: true
 
