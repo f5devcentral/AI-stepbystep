@@ -1,9 +1,13 @@
 # Copyright (c) 2026 markosluga
 # SPDX-License-Identifier: Apache-2.0
 #
-# nginx inbound reverse proxy with OTel tracing and TLS termination.
-# TLS certificates are issued and renewed by the nginx-acme module
-# (ngx_http_acme_module) using the ACME HTTP-01 challenge on port 80.
+# nginx dual-role config:
+#   - Inbound reverse proxy (port 19000 HTTPS + port 80 ACME) — terminates TLS
+#     for external clients reaching OpenClaw; certs managed by ngx_http_acme_module.
+#   - Outbound forward proxy (port 8080) — CONNECT tunnel for HTTPS, plain proxy
+#     for HTTP; openclaw routes all external traffic here via HTTP_PROXY/HTTPS_PROXY.
+#     nginx sees destination host:port for HTTPS but does NOT decrypt content.
+#
 # Template variables substituted at startup: $BACKEND_HOST, $BACKEND_PORT,
 # $ACME_DOMAIN, $ACME_EMAIL
 
@@ -93,6 +97,47 @@ http {
 
         location / {
             return 404;
+        }
+    }
+
+    # ── Forward proxy (outbound HTTP from openclaw) ───────────────────────────
+    # openclaw routes all external traffic here via HTTP_PROXY / HTTPS_PROXY.
+    # HTTP requests: proxied in full — host, method, status visible to nginx.
+    # HTTPS requests: Node.js sends HTTP CONNECT; nginx returns 405 (no CONNECT
+    #   support in stock 1.31.0-otel). Outbound HTTPS isolation is enforced by
+    #   iptables inside the openclaw container — direct internet access is blocked
+    #   at the kernel level regardless.
+    #
+    # TODO: HTTPS CONNECT tunneling requires ngx_http_proxy_connect_module, which
+    #   does not yet patch cleanly against nginx 1.31.0 source. Track upstream
+    #   and re-enable when a compatible patch is available.
+    #
+    # Access control for HTTP: by default all destinations are permitted.
+    # To restrict, uncomment and extend:
+    #
+    # map $host $proxy_allowed {
+    #     default              0;
+    #     ~*\.openai\.com      1;
+    #     ~*\.anthropic\.com   1;
+    # }
+    #
+    # Then inside location /: if ($proxy_allowed = 0) { return 403; }
+    server {
+        listen 8080;
+        resolver 1.1.1.1 8.8.8.8 valid=300s ipv6=off;
+        resolver_timeout 5s;
+
+        otel_trace         on;
+        otel_trace_context propagate;
+
+        location / {
+            proxy_pass         http://$http_host$request_uri;
+            proxy_set_header   Host $http_host;
+
+            otel_span_name     "outbound.request";
+            otel_span_attr     outbound.host   $http_host;
+            otel_span_attr     outbound.method $request_method;
+            otel_span_attr     outbound.status $status;
         }
     }
 }
