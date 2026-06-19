@@ -1,0 +1,69 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# OpenClaw gateway config template.
+# Mounted at /etc/openclaw/openclaw.json.template inside the container,
+# overriding the baked-in template. The entrypoint runs envsubst on this
+# file to render /root/.openclaw/openclaw.json on every start.
+#
+# Plugins enabled:
+#   duckduckgo    — web search (no API key required)
+#   web-readability — extract readable content from fetched pages
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-config-template
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+data:
+  openclaw.json.template: |
+    {
+      "models": {
+        "providers": {
+          "ollama": {
+            "baseUrl": "http://ollama:11434",
+            "apiKey": "ollama-local",
+            "api": "ollama",
+            "models": [
+              {
+                "id": "${OLLAMA_CHAT_MODEL}",
+                "name": "Local LLM",
+                "contextWindow": 32768,
+                "maxTokens": 2048
+              }
+            ]
+          }
+        }
+      },
+      "tools": {
+        "profile": "full",
+        "web": {
+          "search": {
+            "provider": "duckduckgo"
+          },
+          "fetch": {
+            "provider": "web-readability"
+          }
+        }
+      },
+      "gateway": {
+        "port": 19000,
+        "mode": "local",
+        "bind": "lan",
+        "auth": {
+          "mode": "token",
+          "token": "${GATEWAY_TOKEN}"
+        },
+        "trustedProxies": ["172.16.0.0/12"],
+        "controlUi": {
+          "allowedOrigins": [
+            "http://localhost:19000",
+            "http://127.0.0.1:19000",
+            "http://${OPENCLAW_HOST}:${OPENCLAW_HOST_PORT}",
+            "https://${OPENCLAW_HOST}:${OPENCLAW_HOST_PORT}",
+            "https://${ACME_DOMAIN}:${OPENCLAW_HOST_PORT}"
+          ]
+        }
+      }
+    }

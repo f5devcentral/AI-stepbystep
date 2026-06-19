@@ -1,0 +1,92 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# Ollama LLM backend StatefulSet.
+#
+# GPU support (optional):
+#   Uncomment the runtimeClassName and resource limits blocks to enable NVIDIA GPU.
+#   Requires the NVIDIA device plugin: https://github.com/NVIDIA/k8s-device-plugin
+#   and nvidia-container-runtime installed on the node.
+#
+# The entrypoint script pulls the model specified in OLLAMA_MODEL on first start.
+# This may take 5–15 minutes depending on model size and network speed.
+# Monitor progress: kubectl logs -n openclaw -l app=ollama -f
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ollama
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: ollama
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  serviceName: ollama
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+        app.kubernetes.io/name: ollama
+        app.kubernetes.io/part-of: openclaw-network-boundary
+    spec:
+      # NVIDIA GPU runtime — requires nvidia-container-toolkit + k8s device plugin on the node.
+      # A GPU with 12 GB VRAM supports models up to ~qwen2.5:14b.
+      runtimeClassName: nvidia
+      containers:
+        - name: ollama
+          # Official image works for x86 CPU/GPU. For Jetson/ARM build from:
+          # https://github.com/f5devcentral/AI-stepbystep/tree/main/4_agentic_labs/openclaw_network_boundary/services/ollama
+          image: ollama/ollama:latest
+          imagePullPolicy: Always
+          ports:
+            - name: ollama
+              containerPort: 11434
+              protocol: TCP
+          env:
+            - name: OLLAMA_HOST
+              value: "0.0.0.0:11434"
+            - name: OLLAMA_FLASH_ATTENTION
+              value: "1"
+            - name: OLLAMA_KV_CACHE_TYPE
+              value: "q8_0"
+            - name: OLLAMA_CONTEXT_LENGTH
+              value: "32768"
+            - name: OLLAMA_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: OLLAMA_MODEL
+            - name: OLLAMA_MODELS
+              value: "/data/models/ollama/models"
+          volumeMounts:
+            - name: ollama-models
+              mountPath: /data/models/ollama/models
+          readinessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            # Long initial delay: model pull happens at startup and can take minutes.
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 20
+          livenessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              memory: "8Gi"
+              nvidia.com/gpu: "1"
+      volumes:
+        - name: ollama-models
+          persistentVolumeClaim:
+            claimName: ollama-models

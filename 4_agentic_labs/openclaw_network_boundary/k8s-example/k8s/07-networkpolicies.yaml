@@ -1,0 +1,300 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# NetworkPolicies replicating the Docker Compose network isolation model.
+#
+# Docker Compose networks → Kubernetes NetworkPolicies:
+#   net-internal  (openclaw ↔ ollama only)    → openclaw-to-ollama + ollama ingress from openclaw
+#   net-ingress   (nginx ↔ openclaw)          → nginx-to-openclaw + openclaw ingress from nginx
+#   net-proxy     (openclaw → nginx:8080)     → openclaw-to-nginx-proxy + nginx proxy ingress
+#   net-telemetry (nginx → otel-collector)    → nginx-to-otel + otel ingress from nginx
+#   net-pull      (ollama internet egress)    → ollama-egress-internet
+#
+# IMPORTANT: Kubernetes NetworkPolicies require a CNI plugin that enforces them.
+#   - k3s with kube-router (default on some builds): enforces NetworkPolicies.
+#   - k3s with plain Flannel only: does NOT enforce NetworkPolicies.
+#   - Canal (Flannel + Calico policy), Calico, Cilium: full NetworkPolicy support.
+#
+# Verify enforcement: `kubectl get pods -n kube-system | grep kube-router`
+# Without a policy-capable CNI, these manifests apply without error but have
+# no enforcement effect. The iptables rules inside the openclaw container still
+# provide kernel-level isolation regardless.
+---
+# Default deny all ingress and egress within the openclaw namespace.
+# All allowed traffic is permitted by the specific policies below.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# All pods need DNS resolution (UDP/TCP port 53 to kube-dns).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+---
+# openclaw: ingress only from nginx (reverse proxy on port 19000)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: openclaw-ingress-from-nginx
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: openclaw
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nginx
+      ports:
+        - port: 19000
+          protocol: TCP
+---
+# openclaw: egress to ollama (LLM inference, port 11434)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: openclaw-egress-to-ollama
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: openclaw
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ollama
+      ports:
+        - port: 11434
+          protocol: TCP
+---
+# openclaw: egress to nginx forward proxy (port 8080 — all outbound HTTP traffic)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: openclaw-egress-to-nginx-proxy
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: openclaw
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nginx
+      ports:
+        - port: 8080
+          protocol: TCP
+---
+# nginx: ingress from openclaw on port 8080 (forward proxy requests)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nginx-ingress-proxy-from-openclaw
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: openclaw
+      ports:
+        - port: 8080
+          protocol: TCP
+---
+# nginx: ingress from external clients on port 19000 (HTTPS)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nginx-ingress-https-external
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - port: 19000
+          protocol: TCP
+---
+# nginx: egress to openclaw backend (reverse proxy upstream)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nginx-egress-to-openclaw
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: openclaw
+      ports:
+        - port: 19000
+          protocol: TCP
+---
+# nginx: egress to otel-collector (OTLP/gRPC telemetry spans)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nginx-egress-to-otel
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - port: 4317
+          protocol: TCP
+---
+# nginx: egress to internet (forward proxy relays openclaw's outbound HTTP requests)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nginx-egress-internet
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 80
+          protocol: TCP
+        - port: 443
+          protocol: TCP
+---
+# otel-collector: ingress from nginx on port 4317 (OTLP/gRPC)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: otel-ingress-from-nginx
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: otel-collector
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nginx
+      ports:
+        - port: 4317
+          protocol: TCP
+---
+# ollama: ingress only from openclaw on port 11434
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ollama-ingress-from-openclaw
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: ollama
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: openclaw
+      ports:
+        - port: 11434
+          protocol: TCP
+---
+# ollama: egress to internet (model pulls from ollama registry on startup)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ollama-egress-internet
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  podSelector:
+    matchLabels:
+      app: ollama
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 443
+          protocol: TCP
+        - port: 80
+          protocol: TCP

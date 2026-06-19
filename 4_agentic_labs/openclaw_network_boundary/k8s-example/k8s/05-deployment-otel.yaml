@@ -1,0 +1,67 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# OpenTelemetry Collector deployment.
+# Receives OTLP/gRPC spans from nginx and writes them as JSON Lines to a
+# persistent volume at /data/network-boundary-traffic.jsonl.
+#
+# To view the traffic log:
+#   kubectl exec -n openclaw deploy/otel-collector -- tail -f /data/network-boundary-traffic.jsonl
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+        app.kubernetes.io/name: otel-collector
+        app.kubernetes.io/part-of: openclaw-network-boundary
+    spec:
+      # Run as root to write to the volume (mirrors Docker Compose user: "0").
+      securityContext:
+        runAsUser: 0
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:latest
+          args:
+            - "--config=/etc/otel/collector.yaml"
+          ports:
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+          volumeMounts:
+            - name: otel-config
+              mountPath: /etc/otel/collector.yaml
+              subPath: collector.yaml
+              readOnly: true
+            - name: otel-data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              memory: "256Mi"
+      volumes:
+        - name: otel-config
+          configMap:
+            name: otel-config
+        - name: otel-data
+          persistentVolumeClaim:
+            claimName: otel-data

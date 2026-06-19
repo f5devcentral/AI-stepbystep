@@ -1,0 +1,47 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# Kustomize entry point — applies the full OpenClaw network boundary stack.
+#
+# Before applying:
+#   1. Fill in 02-secret.yaml with actual values (see README.md)
+#   2. Fill in 04-secret-dns.yaml with your DNS provider credentials (cert-manager namespace)
+#   3. Update 04-certmanager.yaml: set email, DNS provider fields (hostedZoneID / accessKeyID or equivalent)
+#   4. Update image references in 05-deployment-*.yaml (ollama uses official image)
+#   5. (Optional) Adjust storageClassName in 03-pvc.yaml for your cluster
+#
+# Apply:
+#   kubectl apply -k k8s/
+#
+# Or step-by-step (recommended for first deploy):
+#   kubectl apply -f k8s/00-namespace.yaml
+#   kubectl apply -f k8s/01-configmap-nginx.yaml -f k8s/01-configmap-otel.yaml
+#   kubectl apply -f k8s/02-secret.yaml
+#   kubectl apply -f k8s/03-pvc.yaml
+#   kubectl apply -f k8s/04-secret-dns.yaml        # DNS provider creds for DNS-01 (cert-manager ns)
+#   kubectl apply -f k8s/04-certmanager.yaml
+#   kubectl apply -f k8s/05-statefulset-ollama.yaml
+#   kubectl apply -f k8s/05-deployment-otel.yaml
+#   kubectl apply -f k8s/05-deployment-openclaw.yaml
+#   kubectl apply -f k8s/05-deployment-nginx.yaml
+#   kubectl apply -f k8s/06-services.yaml
+#   kubectl apply -f k8s/07-networkpolicies.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: openclaw
+
+resources:
+  - 00-namespace.yaml
+  - 01-configmap-nginx.yaml
+  - 01-configmap-otel.yaml
+  - 02-secret.yaml
+  - 03-pvc.yaml
+  - 04-secret-dns.yaml
+  - 04-certmanager.yaml
+  - 05-statefulset-ollama.yaml
+  - 05-deployment-otel.yaml
+  - 05-deployment-openclaw.yaml
+  - 05-deployment-nginx.yaml
+  - 06-services.yaml
+  - 07-networkpolicies.yaml

@@ -1,0 +1,56 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# PersistentVolumeClaims for stateful data.
+# Adjust storage sizes and storageClassName to match your cluster's provisioner.
+# For k3s the default storageClassName is "local-path".
+# For bare-metal without dynamic provisioning, create PVs manually or use a CSI driver.
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-models
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: ollama
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # qwen2.5:3b requires ~2 GB; adjust up for larger models.
+      storage: 20Gi
+  storageClassName: local-path   # k3s default; change for other distributions
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openclaw-state
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: openclaw
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: otel-data
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-path
