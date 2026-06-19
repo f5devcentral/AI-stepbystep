@@ -1,0 +1,124 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# nginx configuration template for Kubernetes.
+# Key differences from the Docker Compose version:
+#   - ngx_http_acme_module removed: TLS certificates are managed by cert-manager
+#     and mounted as a Kubernetes Secret at /etc/nginx/tls/
+#   - Port 80 server removed: cert-manager HTTP-01 solver handles ACME challenges
+#     independently via a temporary ingress pod
+#   - OTel exporter, forward proxy (port 8080), and inbound reverse proxy (port 19000)
+#     are unchanged
+#
+# Template variables substituted at container startup by the nginx entrypoint:
+#   $BACKEND_HOST, $BACKEND_PORT, $ACME_DOMAIN
+# (ACME_EMAIL is still required by the entrypoint validation but unused in this config.)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/part-of: openclaw-network-boundary
+data:
+  nginx.conf.template: |
+    load_module modules/ngx_otel_module.so;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        resolver 1.1.1.1 8.8.8.8 valid=300s ipv6=off;
+        resolver_timeout 5s;
+
+        otel_exporter {
+            endpoint otel-collector:4317;
+        }
+
+        access_log /dev/stdout;
+        error_log  /dev/stderr warn;
+
+        upstream backend {
+            server ${BACKEND_HOST}:${BACKEND_PORT};
+            keepalive 32;
+        }
+
+        # HTTPS inbound — TLS certificate provided by cert-manager Secret
+        server {
+            listen 19000 ssl;
+            server_name ${ACME_DOMAIN};
+
+            ssl_certificate     /etc/nginx/tls/tls.crt;
+            ssl_certificate_key /etc/nginx/tls/tls.key;
+            ssl_protocols       TLSv1.2 TLSv1.3;
+            ssl_ciphers         HIGH:!aNULL:!MD5;
+            ssl_session_cache   shared:SSL:10m;
+            ssl_session_timeout 10m;
+
+            otel_trace         on;
+            otel_trace_context propagate;
+            otel_span_name     "inbound.request";
+
+            location / {
+                proxy_pass         http://backend;
+                proxy_http_version 1.1;
+                proxy_set_header   Upgrade         $http_upgrade;
+                proxy_set_header   Connection      "upgrade";
+                proxy_set_header   Host            $host;
+                proxy_set_header   X-Real-IP       $remote_addr;
+                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                otel_span_attr http.client_ip  $remote_addr;
+                otel_span_attr http.method     $request_method;
+                otel_span_attr http.path       $request_uri;
+                otel_span_attr http.status     $status;
+            }
+        }
+
+        # Allowlist for the outbound forward proxy.
+        # $host is the CONNECT target hostname for HTTPS, or the HTTP Host header.
+        map $host $proxy_allowed {
+            default              0;
+            nginx.org            1;
+            www.nginx.org        1;
+            duckduckgo.com       1;
+            html.duckduckgo.com  1;
+            api.duckduckgo.com   1;
+            links.duckduckgo.com 1;
+        }
+
+        # Outbound forward proxy — openclaw routes all external traffic here via
+        # HTTP_PROXY / HTTPS_PROXY env vars.
+        # nginx 1.31+ tunnel_pass (ngx_http_tunnel_module) handles HTTP CONNECT
+        # for HTTPS; proxy_pass handles plain HTTP.
+        server {
+            listen 8080;
+            resolver 1.1.1.1 8.8.8.8 valid=300s ipv6=off;
+            resolver_timeout 5s;
+
+            otel_trace         on;
+            otel_trace_context propagate;
+
+            location / {
+                if ($proxy_allowed = 0) {
+                    return 403;
+                }
+
+                # CONNECT method: tunnel to $host:$request_port (the CONNECT target)
+                if ($request_method = CONNECT) {
+                    tunnel_pass;
+                }
+
+                # Plain HTTP forward proxy
+                proxy_pass         http://$http_host$request_uri;
+                proxy_set_header   Host $http_host;
+
+                otel_span_name     "outbound.request";
+                otel_span_attr     outbound.host   $http_host;
+                otel_span_attr     outbound.method $request_method;
+                otel_span_attr     outbound.status $status;
+            }
+        }
+    }

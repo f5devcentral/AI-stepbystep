@@ -494,11 +494,31 @@ docker compose down -v
 
 ---
 
+## Kubernetes deployment
+
+A complete Kubernetes version of this stack is available in the [`k8s-example/`](k8s-example/) folder. It deploys the same network boundary — identical security model, same images — using Kubernetes manifests with cert-manager for automatic TLS via DNS-01 validation.
+
+**Key differences from this Docker Compose setup:**
+
+| | Docker Compose (this lab) | Kubernetes ([k8s-example/](k8s-example/)) |
+|---|---|---|
+| Orchestration | `docker compose up` | `kubectl apply` / Kustomize |
+| TLS issuance | nginx-acme (HTTP-01, port 80 required) | cert-manager (DNS-01, no port 80 needed) |
+| Certificate storage | nginx volume | Kubernetes Secret mounted into nginx |
+| Certificate renewal | nginx-acme module | cert-manager + Stakater Reloader |
+| Networking | Docker networks | Kubernetes NetworkPolicies + Services |
+| GPU | `OLLAMA_RUNTIME=nvidia` in `.env` | `runtimeClassName: nvidia` in StatefulSet |
+
+See [`k8s-example/README.md`](k8s-example/README.md) for the full deployment guide.
+
+---
+
 ## Next steps
 
 - Forward spans to a backend like Jaeger, Tempo, or an OTLP-compatible SaaS by modifying `services/otel/collector.yaml`
 - Add an allowlist to the nginx forward proxy to restrict OpenClaw to only the destinations it needs — see the commented `map` block in `services/nginx/nginx.conf.template`
 - Switch to DNS-01 validation (no public port 80 required): [docs/dns-acme.md](docs/dns-acme.md)
+- Deploy on Kubernetes: [k8s-example/](k8s-example/)
 - Review the full technical reference: [docs/technical.md](docs/technical.md)
 
 ## License

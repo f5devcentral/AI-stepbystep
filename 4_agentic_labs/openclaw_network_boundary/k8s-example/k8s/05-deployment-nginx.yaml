@@ -1,0 +1,103 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# nginx deployment: inbound HTTPS reverse proxy (port 19000) + outbound HTTP
+# forward proxy (port 8080) + OpenTelemetry tracing.
+#
+# TLS certificate is managed by cert-manager and mounted from the openclaw-tls
+# Secret. The nginx entrypoint renders nginx.conf from the ConfigMap template
+# using envsubst before starting nginx.
+#
+# The nginx-acme module is present in the base image (nginx:1.31.1-otel) but
+# is NOT loaded in this config — cert-manager owns the certificate lifecycle.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/part-of: openclaw-network-boundary
+  annotations:
+    # Restart nginx when the TLS Secret is rotated by cert-manager.
+    secret.reloader.stakater.com/reload: "openclaw-tls"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        app.kubernetes.io/name: nginx
+        app.kubernetes.io/part-of: openclaw-network-boundary
+    spec:
+      containers:
+        - name: nginx
+          # Build from: https://github.com/f5devcentral/AI-stepbystep/tree/main/4_agentic_labs/openclaw_network_boundary/services/nginx
+          # Push to your registry and update this image reference.
+          image: YOUR_REGISTRY/openclaw-nginx:latest
+          imagePullPolicy: Always
+          ports:
+            - name: https
+              containerPort: 19000
+              protocol: TCP
+            - name: proxy
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: ACME_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: ACME_DOMAIN
+            - name: ACME_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: ACME_EMAIL
+            - name: BACKEND_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: BACKEND_HOST
+            - name: BACKEND_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: BACKEND_PORT
+          volumeMounts:
+            # Override the baked-in config template with our Kubernetes version
+            # (no acme module directives, uses cert-manager TLS paths).
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf.template
+              subPath: nginx.conf.template
+              readOnly: true
+            # TLS certificate and key managed by cert-manager.
+            - name: tls
+              mountPath: /etc/nginx/tls
+              readOnly: true
+          readinessProbe:
+            tcpSocket:
+              port: 19000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 19000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              memory: "256Mi"
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+        - name: tls
+          secret:
+            secretName: openclaw-tls

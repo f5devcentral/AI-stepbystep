@@ -1,0 +1,99 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# Services for all OpenClaw stack components.
+#
+# nginx: LoadBalancer type exposes ports 19000 (HTTPS inbound) and 8080
+#        (forward proxy — cluster-internal only).
+#        In k3s, klipper-lb assigns the node IP automatically.
+#        In bare-metal kubeadm, install MetalLB or switch to NodePort.
+#
+# All other services are ClusterIP (cluster-internal only).
+---
+# openclaw gateway — cluster-internal; nginx is the only ingress point
+apiVersion: v1
+kind: Service
+metadata:
+  name: openclaw
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: openclaw
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  selector:
+    app: openclaw
+  ports:
+    - name: gateway
+      port: 19000
+      targetPort: 19000
+      protocol: TCP
+  type: ClusterIP
+---
+# ollama LLM backend — cluster-internal; openclaw is the only consumer
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: ollama
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  selector:
+    app: ollama
+  ports:
+    - name: ollama
+      port: 11434
+      targetPort: 11434
+      protocol: TCP
+  type: ClusterIP
+---
+# otel-collector — cluster-internal; nginx sends OTLP/gRPC spans here
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: otel-collector
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+  type: ClusterIP
+---
+# nginx — externally reachable; LoadBalancer for k3s / MetalLB environments.
+# For bare-metal kubeadm without MetalLB, change type to NodePort and add
+# nodePort fields (e.g. nodePort: 30443 for HTTPS).
+#
+# Port 19000: HTTPS inbound (OpenClaw UI/API)
+# Port 8080:  HTTP forward proxy (openclaw → internet via nginx; cluster-internal)
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  selector:
+    app: nginx
+  ports:
+    - name: https
+      port: 19000
+      targetPort: 19000
+      protocol: TCP
+    - name: proxy
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  type: LoadBalancer
+  # Optionally pin the external IP (MetalLB / k3s with static IP assignment):
+  # loadBalancerIP: "192.168.1.100"
+  externalTrafficPolicy: Local

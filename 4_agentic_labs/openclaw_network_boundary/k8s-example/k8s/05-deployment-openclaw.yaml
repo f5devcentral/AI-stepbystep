@@ -1,0 +1,134 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# OpenClaw gateway deployment.
+#
+# NET_ADMIN capability is required: the entrypoint applies iptables OUTPUT rules
+# that block direct internet access at the kernel level, forcing all outbound
+# traffic through the nginx forward proxy. Without NET_ADMIN the iptables
+# commands fail gracefully (logged as WARNING) and isolation falls back to
+# application-layer HTTP_PROXY enforcement only.
+#
+# Pod IPs on Kubernetes are RFC1918 addresses, so the iptables rules that allow
+# RFC1918 destinations correctly permit traffic to the nginx and ollama Services.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openclaw
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: openclaw
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openclaw
+  template:
+    metadata:
+      labels:
+        app: openclaw
+        app.kubernetes.io/name: openclaw
+        app.kubernetes.io/part-of: openclaw-network-boundary
+    spec:
+      # NET_ADMIN is required for iptables network isolation inside the container.
+      # If your cluster policy forbids NET_ADMIN, remove this block — the proxy
+      # env vars still enforce application-layer routing, just not kernel-level.
+      securityContext:
+        sysctls: []
+      containers:
+        - name: openclaw
+          # Build from: https://github.com/f5devcentral/AI-stepbystep/tree/main/4_agentic_labs/openclaw_network_boundary/services/openclaw
+          # Push to your registry and update this image reference.
+          image: YOUR_REGISTRY/openclaw-gateway:latest
+          imagePullPolicy: Always
+          ports:
+            - name: gateway
+              containerPort: 19000
+              protocol: TCP
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+          env:
+            - name: GATEWAY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: GATEWAY_TOKEN
+            - name: OLLAMA_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: OLLAMA_MODEL
+            - name: OLLAMA_CHAT_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: OLLAMA_CHAT_MODEL
+            - name: OPENCLAW_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: OPENCLAW_HOST
+            - name: OPENCLAW_HOST_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: OPENCLAW_HOST_PORT
+            - name: ACME_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-env
+                  key: ACME_DOMAIN
+            # Route all outbound traffic through nginx forward proxy for monitoring.
+            # nginx 1.31+ supports HTTP CONNECT tunneling for HTTPS.
+            - name: HTTP_PROXY
+              value: "http://nginx:8080"
+            - name: HTTPS_PROXY
+              value: "http://nginx:8080"
+            # Exclude cluster-internal services from proxy routing.
+            - name: NO_PROXY
+              value: "ollama,otel-collector,localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc.cluster.local"
+            # OPENCLAW_PROXY_ACTIVE=1 activates the managed proxy routing path in
+            # openclaw, which makes strict-mode web_fetch use the env proxy
+            # (HTTPS_PROXY) instead of bypassing it entirely.
+            - name: OPENCLAW_PROXY_ACTIVE
+              value: "1"
+            - name: OPENCLAW_PROXY_URL
+              value: "http://nginx:8080"
+            - name: OPENCLAW_USER
+              value: ""
+          volumeMounts:
+            - name: openclaw-state
+              mountPath: /root/.openclaw
+            - name: openclaw-config-template
+              mountPath: /etc/openclaw/openclaw.json.template
+              subPath: openclaw.json.template
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 19000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 19000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              memory: "512Mi"
+      volumes:
+        - name: openclaw-state
+          persistentVolumeClaim:
+            claimName: openclaw-state
+        - name: openclaw-config-template
+          configMap:
+            name: openclaw-config-template

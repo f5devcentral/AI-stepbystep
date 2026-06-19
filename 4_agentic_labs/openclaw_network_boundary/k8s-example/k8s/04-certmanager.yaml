@@ -1,0 +1,89 @@
+# Copyright (c) 2026 markosluga
+# SPDX-License-Identifier: Apache-2.0
+#
+# cert-manager resources for automatic TLS certificate issuance and renewal.
+#
+# Prerequisites:
+#   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
+#   kubectl wait --namespace cert-manager --for=condition=ready pod --selector=app.kubernetes.io/instance=cert-manager --timeout=120s
+#
+# This configuration uses DNS-01 validation, which is required when port 80 is not
+# reachable from the internet (firewalled servers, internal clusters, etc.) and is
+# the recommended approach for single-server deployments.
+#
+# DNS-01 works with any provider supported by cert-manager. The example below uses
+# AWS Route53. For Cloudflare, GCP CloudDNS, Azure DNS, and others see:
+#   https://cert-manager.io/docs/configuration/acme/dns01/
+#
+# Prerequisites for DNS-01:
+#   - Apply 04-secret-dns.yaml first (DNS provider credentials in cert-manager namespace)
+#   - Replace REPLACE_* placeholders below before applying
+#   - Grant your DNS provider credentials the permissions required to create/delete TXT records
+#
+# To find your hosted zone ID (AWS Route53 example):
+#   aws route53 list-hosted-zones --query 'HostedZones[?Name==`<your-domain>.`].Id'
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  acme:
+    # Replace with the email set in the openclaw-env Secret (ACME_EMAIL).
+    email: replace-with-your-email@example.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod-key
+    solvers:
+      # --- DNS-01 solver: AWS Route53 example ---
+      # For other providers, replace this block. Examples:
+      #
+      # Cloudflare:
+      #   dns01:
+      #     cloudflare:
+      #       email: your-cloudflare-email@example.com
+      #       apiTokenSecretRef:
+      #         name: dns-provider-credentials
+      #         key: api-token
+      #
+      # GCP Cloud DNS:
+      #   dns01:
+      #     cloudDNS:
+      #       project: your-gcp-project-id
+      #       serviceAccountSecretRef:
+      #         name: dns-provider-credentials
+      #         key: service-account.json
+      - dns01:
+          route53:
+            # AWS region where cert-manager makes Route53 API calls.
+            region: us-east-1
+            # Replace with your Route53 hosted zone ID.
+            hostedZoneID: REPLACE_HOSTED_ZONE_ID
+            # AWS access key ID for the IAM user with Route53 permissions.
+            accessKeyID: REPLACE_AWS_ACCESS_KEY_ID
+            # Secret created by 04-secret-dns.yaml in the cert-manager namespace.
+            secretAccessKeySecretRef:
+              name: dns-provider-credentials
+              key: secret-access-key
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: openclaw-tls
+  namespace: openclaw
+  labels:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/part-of: openclaw-network-boundary
+spec:
+  # Secret name that nginx mounts at /etc/nginx/tls/
+  secretName: openclaw-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    # Replace with the domain set in the openclaw-env Secret (ACME_DOMAIN).
+    - replace-with-your-domain.example.com
+  # cert-manager renews automatically when the cert is within 30 days of expiry.
+  renewBefore: 720h   # 30 days
